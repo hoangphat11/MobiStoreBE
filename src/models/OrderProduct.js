@@ -7,12 +7,12 @@ const orderSchema = new mongoose.Schema({
             amount: { type: Number, required: true },
             image: { type: String, required: true },
             price: { type: Number, required: true },
-            discount: { type: Number, require: false },
+            discount: { type: Number, required: false },
             product: {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: 'Product',
+                ref: "Product",
                 required: true
-            },
+            }
         }
     ],
     shippingAddress: {
@@ -20,7 +20,7 @@ const orderSchema = new mongoose.Schema({
         address: { type: String, required: true },
         city: { type: String, required: true },
         country: { type: String, required: false },
-        phone: { type: String, required: true },
+        phone: { type: String, required: true }
     },
     paymentMethod: { type: String, required: true },
     itemsPrice: { type: Number, required: true },
@@ -29,18 +29,31 @@ const orderSchema = new mongoose.Schema({
     totalPrice: { type: Number, required: true },
     user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: "User",
         required: true
     },
+
+    // Payment
     isPaid: { type: Boolean, default: false },
-    paidAt: { type: Date, default: '' },
+    paidAt: { type: Date, default: null },
+
+    // Delivery
     isDelivered: { type: Boolean, default: false },
-    deliveredAt: { type: Date },
+    deliveredAt: { type: Date, default: null },
+
+    // Order Status tracking
+    orderStatus: {
+        type: String,
+        enum: ["Pending", "Confirmed", "Shipping", "Delivered", "Cancelled"],
+        default: "Pending"
+    },
+    confirmedAt: { type: Date, default: null },
+    shippedAt: { type: Date, default: null },
+    cancelledAt: { type: Date, default: null }
 },
     {
-        timestamps: true,
-    }
-);
+        timestamps: true
+    });
 
 const Order = mongoose.model("Order", orderSchema);
-module.exports = Order;
+export default Order;

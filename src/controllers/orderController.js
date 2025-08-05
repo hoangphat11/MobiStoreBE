@@ -89,8 +89,38 @@ const handleDeleteOrder = async (req, res) => {
         })
     }
 }
+const handleUpdateOrderStatus = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const updateData = req.body;
+
+        if (!orderId || !updateData || !updateData.orderStatus) {
+            return res.status(400).json({
+                EM: 'Missing required parameters: orderId or orderStatus',
+                EC: 1,
+                DT: '',
+            });
+        }
+
+        const data = await orderAPIService.updateOrderStatus(orderId, updateData);
+
+        return res.status(200).json({
+            EM: data.EM,
+            EC: data.EC,
+            DT: data.DT,
+        });
+    } catch (error) {
+        console.log('>>> check error from handleUpdateOrderStatus():', error);
+        return res.status(500).json({
+            EM: 'error from server',
+            EC: -1,
+            DT: '',
+        });
+    }
+};
+
 
 
 module.exports = {
-    handleGetAllOrders, handleCreateNewOrder, handleGetOrdersByUserId, handleGetDetailOrder, handleDeleteOrder,
+    handleGetAllOrders, handleCreateNewOrder, handleGetOrdersByUserId, handleGetDetailOrder, handleDeleteOrder, handleUpdateOrderStatus,
 };

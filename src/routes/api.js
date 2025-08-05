@@ -13,7 +13,7 @@ const initAPIRoutes = (app) => {
     router.post("/logout", userController.handleLogout);
 
     // routes for USER:
-    router.get('/users', authPermissionMiddleware, userController.handleGetAllUsers);
+    router.get('/', authPermissionMiddleware, userController.handleGetAllUsers);
     router.get('/users/:id', authUserMiddleware, userController.handleGetDetailUser);
     router.get('/refresh-token', userController.handleRefreshToken);
     router.put('/users/update', authUserMiddleware, userController.handleUpdateUser);
@@ -29,12 +29,15 @@ const initAPIRoutes = (app) => {
     router.delete('/product/delete', authPermissionMiddleware, productController.handleDeleteProduct);
     router.delete('/product/delete-many', authPermissionMiddleware, productController.handleDeleteManyProduct);
 
+
+
     // routes for ORDER:
     router.get('/order', authPermissionMiddleware, orderController.handleGetAllOrders);
     router.get('/order/get-orders-by-userId/:id', authUserMiddleware, orderController.handleGetOrdersByUserId);
     router.get('/order/get-detail-order/:orderId', authUserMiddleware, orderController.handleGetDetailOrder);
     router.post('/order/create', authUserMiddleware, orderController.handleCreateNewOrder);
     router.delete('/order/delete/:orderId', orderController.handleDeleteOrder);
+    router.put('/order/update-status/:orderId', authPermissionMiddleware, orderController.handleUpdateOrderStatus);
 
     //routes for Payment (Paypal)
     router.get('/payment/config', paymentController.handleGetPaymentConfig);
