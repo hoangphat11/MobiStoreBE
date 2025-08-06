@@ -209,30 +209,49 @@ const deleteOrder = async (orderId, userId) => {
         };
     }
 };
-
-const updateOrderStatus = async (orderId, status) => {
+// cập nhật trạng thái đơn hàng
+const updateOrderStatus = async (orderId, status, userId) => {
     try {
-        if (!orderId || !status) {
+        // Kiểm tra tham số bắt buộc
+        if (!orderId || !status || !userId) {
             return {
-                EM: 'Missing orderId or status!',
+                EM: 'Missing required parameter: orderId, status or userId!',
                 EC: 1,
                 DT: ''
             };
         }
 
+        // Kiểm tra định dạng ObjectId
+        if (!Types.ObjectId.isValid(orderId) || !Types.ObjectId.isValid(userId)) {
+            return {
+                EM: 'Invalid ID format for orderId or userId!',
+                EC: 1,
+                DT: ''
+            };
+        }
+
+        // Xác thực user
+        const user = await User.findById(userId, '-password -createdAt -updatedAt -__v');
+        if (!user) {
+            return {
+                EM: 'User not found!',
+                EC: -1,
+                DT: ''
+            };
+        }
+
+        // Danh sách trạng thái hợp lệ
         const validStatuses = ["Pending", "Confirmed", "Shipping", "Delivered", "Cancelled"];
         if (!validStatuses.includes(status)) {
             return {
-                EM: "Invalid status provided!",
+                EM: 'Invalid status provided!',
                 EC: 2,
                 DT: ''
             };
         }
 
-        // Khởi tạo update object
+        // Xác định các trường cập nhật tương ứng theo status
         const updateFields = { orderStatus: status };
-
-        // Thêm thời gian tương ứng với status
         const now = new Date();
         switch (status) {
             case 'Confirmed':
@@ -249,15 +268,20 @@ const updateOrderStatus = async (orderId, status) => {
                 break;
         }
 
-        const updatedOrder = await Order.findByIdAndUpdate(
-            orderId,
+        // Chỉ admin có thể cập nhật tất cả, user thường chỉ được cập nhật đơn hàng của chính mình
+        const filter = user.isAdmin
+            ? { _id: orderId }
+            : { _id: orderId, user: userId };
+
+        const updatedOrder = await Order.findOneAndUpdate(
+            filter,
             updateFields,
             { new: true, runValidators: true }
         );
 
         return updatedOrder
-            ? { EM: 'Order status updated successfully', EC: 0, DT: updatedOrder }
-            : { EM: 'Order not found!', EC: -1, DT: '' };
+            ? { EM: 'Order status updated successfully!', EC: 0, DT: updatedOrder }
+            : { EM: 'Order not found or access denied!', EC: -1, DT: '' };
     } catch (error) {
         console.error('>>> Error from updateOrderStatus():', error);
         return {
@@ -267,6 +291,7 @@ const updateOrderStatus = async (orderId, status) => {
         };
     }
 };
+
 
 
 module.exports = {

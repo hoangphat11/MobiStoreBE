@@ -41,7 +41,7 @@ const orderSchema = new mongoose.Schema({
     isDelivered: { type: Boolean, default: false },
     deliveredAt: { type: Date, default: null },
 
-    // Order Status tracking
+    // Order Status tracking:  trạng thái đơn hàng
     orderStatus: {
         type: String,
         enum: ["Pending", "Confirmed", "Shipping", "Delivered", "Cancelled"],
