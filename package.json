@@ -4,10 +4,11 @@
   "description": "Backend from MobileStore",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+  
     "start": "nodemon --exec babel-node src/server.js",
     "build-src": "babel src -d build --copy-files",
-    "build": "node build/server.js"
+    "build": "node build/server.js",
+    "test": "jest"
   },
   "author": "Nhom 2",
   "license": "ISC",
@@ -16,6 +17,7 @@
     "@babel/core": "^7.26.0",
     "@babel/node": "^7.26.0",
     "@babel/preset-env": "^7.26.0",
+    "jest": "^30.0.5",
     "nodemon": "^3.1.7"
   },
   "dependencies": {
