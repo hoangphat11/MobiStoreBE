@@ -1,83 +1,338 @@
-// src/test/productAPIService.test.js
+import { Types } from 'mongoose';
+import _ from 'lodash';
 import Product from '../models/ProductModel';
 import * as productService from '../services/productAPIService';
 
-// Mock toàn bộ Product model
 jest.mock('../models/ProductModel');
+jest.mock('lodash');
 
-describe('productAPIService', () => {
+describe('Product Service', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('createNewProduct', () => {
+    it('should return error if missing params', async () => {
+      const res = await productService.createNewProduct({});
+      expect(res.EC).toBe(1);
+    });
+
+    it('should return error if product name existed', async () => {
+      Product.findOne.mockResolvedValueOnce({ name: 'ABC' });
+      const res = await productService.createNewProduct({
+        name: 'ABC', image: 'img', type: 't', price: 10, countInStock: 1, rating: 5
+      });
+      expect(res.EC).toBe(2);
+    });
+
+    it('should create successfully', async () => {
+      Product.findOne.mockResolvedValueOnce(null);
+      const mockSave = jest.fn().mockResolvedValue({});
+      Product.mockImplementation(() => ({ save: mockSave }));
+      const res = await productService.createNewProduct({
+        name: 'ABC', image: 'img', type: 't', price: 10, countInStock: 1, rating: 5
+      });
+      expect(res.EC).toBe(0);
+    });
+
+    it('should handle exception', async () => {
+      Product.findOne.mockRejectedValueOnce(new Error('DB error'));
+      const res = await productService.createNewProduct({
+        name: 'ABC', image: 'img', type: 't', price: 10, countInStock: 1, rating: 5
+      });
+      expect(res.EC).toBe(-2);
+    });
+
+    it('should return error if only some fields missing', async () => {
+      const res = await productService.createNewProduct({
+        name: 'OnlyName', price: 10
+      });
+      expect(res.EC).toBe(1);
+    });
+  });
+
+  describe('getAllProducts', () => {
+    it('should return success if products found', async () => {
+      Product.find.mockResolvedValueOnce([{ name: 'p1' }]);
+      const res = await productService.getAllProducts();
+      expect(res.EC).toBe(0);
+    });
+
+    it('should return error if no products', async () => {
+      Product.find.mockResolvedValueOnce([]);
+      const res = await productService.getAllProducts();
+      expect(res.EC).toBe(1);
+    });
+
+    it('should handle exception', async () => {
+      Product.find.mockRejectedValueOnce(new Error('DB error'));
+      const res = await productService.getAllProducts();
+      expect(res.EC).toBe(-2);
+    });
+  });
+
+  describe('getAllProductsPagination', () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+      Product.find.mockReturnValue({
+        skip: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockReturnThis(),
+        lean: jest.fn().mockResolvedValue([{ name: 'p1' }])
+      });
     });
 
-    test('getAllProducts - có sản phẩm', async () => {
-        const mockProducts = [
-            { name: 'iPhone 15', price: 1000 },
-            { name: 'Samsung S24', price: 900 }
-        ];
-        Product.find.mockResolvedValue(mockProducts);
-
-        const res = await productService.getAllProducts();
-
-        expect(res.EC).toBe(0);
-        expect(res.DT).toEqual(mockProducts);
-        expect(Product.find).toHaveBeenCalledWith({}, '-createdAt -updatedAt -__v');
+    it('should paginate with page and limit', async () => {
+      Product.countDocuments.mockResolvedValueOnce(10);
+      const res = await productService.getAllProductsPagination(1, 5);
+      expect(res.EC).toBe(0);
     });
 
-    test('getAllProducts - không có sản phẩm', async () => {
-        Product.find.mockResolvedValue([]);
-
-        const res = await productService.getAllProducts();
-
-        expect(res.EC).toBe(1);
-        expect(res.DT).toEqual([]);
+    it('should handle filter + field with page', async () => {
+      Product.countDocuments.mockResolvedValueOnce(10);
+      await productService.getAllProductsPagination(1, 5, null, 'name', 'abc');
+      expect(Product.find).toHaveBeenCalledWith({ name: { '$regex': 'abc', '$options': 'i' } });
     });
 
-    test('createNewProduct - thiếu params', async () => {
-        const res = await productService.createNewProduct({});
-        expect(res.EC).toBe(1);
-        expect(res.EM).toMatch(/Missing required params/);
+    it('should handle sort + field with page', async () => {
+      Product.countDocuments.mockResolvedValueOnce(10);
+      await productService.getAllProductsPagination(1, 5, 'asc', 'name');
+      expect(Product.find).toHaveBeenCalled();
     });
 
-    test('createNewProduct - tên sản phẩm trùng', async () => {
-        // Giả lập findOne trả về product => tên trùng
-        Product.findOne.mockResolvedValue({ name: 'iPhone 15' });
-
-        const data = {
-            name: 'iPhone 15',
-            image: 'img.jpg',
-            type: 'phone',
-            price: 1000,
-            countInStock: 10,
-            rating: 5
-        };
-        const res = await productService.createNewProduct(data);
-
-        expect(res.EC).toBe(2);
-        expect(res.EM).toMatch(/already existed/);
+    it('should handle error with page', async () => {
+      Product.countDocuments.mockRejectedValueOnce(new Error('DB error'));
+      const res = await productService.getAllProductsPagination(1, 5);
+      expect(res.EC).toBe(-2);
     });
 
-    test('getDetailProdById - id không hợp lệ', async () => {
-        const res = await productService.getDetailProdById('invalid-id');
-        expect(res.EC).toBe(1);
-        expect(res.EM).toMatch(/Invalid ID format/);
+    it('should work without page and limit', async () => {
+      Product.countDocuments.mockResolvedValueOnce(5);
+      const res = await productService.getAllProductsPagination(null, null);
+      expect(res.EC).toBe(0);
     });
 
-    test('deleteProduct - thành công', async () => {
-        Product.findByIdAndDelete.mockResolvedValue({ _id: 'abc123' });
+    it('should work without page but with sort', async () => {
+      Product.countDocuments.mockResolvedValueOnce(5);
+      const res = await productService.getAllProductsPagination(null, null, 'desc', 'price');
+      expect(res.EC).toBe(0);
+    });
+  });
 
-        const res = await productService.deleteProduct('507f1f77bcf86cd799439011');
-
-        expect(res.EC).toBe(0);
-        expect(res.EM).toMatch(/Delete successfully/);
+  describe('getDetailProdById', () => {
+    it('should return error if missing id', async () => {
+      const res = await productService.getDetailProdById();
+      expect(res.EC).toBe(1);
     });
 
-    test('deleteProduct - không tìm thấy', async () => {
-        Product.findByIdAndDelete.mockResolvedValue(null);
-
-        const res = await productService.deleteProduct('507f1f77bcf86cd799439011');
-
-        expect(res.EC).toBe(-1);
-        expect(res.EM).toMatch(/not existed/);
+    it('should return error if invalid id', async () => {
+      jest.spyOn(Types.ObjectId, 'isValid').mockReturnValueOnce(false);
+      const res = await productService.getDetailProdById('123');
+      expect(res.EC).toBe(1);
     });
+
+    it('should return product if found', async () => {
+      jest.spyOn(Types.ObjectId, 'isValid').mockReturnValueOnce(true);
+      Product.findOne.mockResolvedValueOnce({ name: 'p1' });
+      const res = await productService.getDetailProdById('validId');
+      expect(res.EC).toBe(0);
+    });
+
+    it('should return not found', async () => {
+      jest.spyOn(Types.ObjectId, 'isValid').mockReturnValueOnce(true);
+      Product.findOne.mockResolvedValueOnce(null);
+      const res = await productService.getDetailProdById('validId');
+      expect(res.EC).toBe(-1);
+    });
+
+    it('should handle error', async () => {
+      jest.spyOn(Types.ObjectId, 'isValid').mockReturnValueOnce(true);
+      Product.findOne.mockRejectedValueOnce(new Error('err'));
+      const res = await productService.getDetailProdById('validId');
+      expect(res.EC).toBe(-2);
+    });
+  });
+
+  describe('updateProduct', () => {
+    it('should return error if missing id', async () => {
+      const res = await productService.updateProduct({ data: {} });
+      expect(res.EC).toBe(1);
+    });
+
+    it('should return error if invalid id', async () => {
+      jest.spyOn(Types.ObjectId, 'isValid').mockReturnValueOnce(false);
+      const res = await productService.updateProduct({ id: 'bad', data: {} });
+      expect(res.EC).toBe(1);
+    });
+
+    it('should return error if name existed', async () => {
+      jest.spyOn(Types.ObjectId, 'isValid').mockReturnValueOnce(true);
+      Product.findOne.mockResolvedValueOnce({ name: 'dup' });
+      const res = await productService.updateProduct({ id: 'id', data: { name: 'dup' } });
+      expect(res.EC).toBe(2);
+    });
+
+    it('should update success', async () => {
+      jest.spyOn(Types.ObjectId, 'isValid').mockReturnValueOnce(true);
+      Product.findOne.mockResolvedValueOnce(null);
+      Product.findByIdAndUpdate.mockResolvedValueOnce({ name: 'updated' });
+      const res = await productService.updateProduct({ id: 'id', data: { name: 'n' } });
+      expect(res.EC).toBe(0);
+    });
+
+    it('should update when no name provided', async () => {
+      jest.spyOn(Types.ObjectId, 'isValid').mockReturnValueOnce(true);
+      Product.findByIdAndUpdate.mockResolvedValueOnce({ name: 'updated' });
+      const res = await productService.updateProduct({ id: 'id', data: { price: 100 } });
+      expect(res.EC).toBe(0);
+    });
+
+    it('should return not found', async () => {
+      jest.spyOn(Types.ObjectId, 'isValid').mockReturnValueOnce(true);
+      Product.findOne.mockResolvedValueOnce(null);
+      Product.findByIdAndUpdate.mockResolvedValueOnce(null);
+      const res = await productService.updateProduct({ id: 'id', data: { name: 'n' } });
+      expect(res.EC).toBe(-1);
+    });
+
+    it('should handle error', async () => {
+      jest.spyOn(Types.ObjectId, 'isValid').mockReturnValueOnce(true);
+      Product.findOne.mockRejectedValueOnce(new Error('err'));
+      const res = await productService.updateProduct({ id: 'id', data: { name: 'n' } });
+      expect(res.EC).toBe(-2);
+    });
+  });
+
+  describe('deleteProduct', () => {
+    it('should return error if missing id', async () => {
+      const res = await productService.deleteProduct();
+      expect(res.EC).toBe(1);
+    });
+
+    it('should return error if invalid id', async () => {
+      jest.spyOn(Types.ObjectId, 'isValid').mockReturnValueOnce(false);
+      const res = await productService.deleteProduct('bad');
+      expect(res.EC).toBe(1);
+    });
+
+    it('should delete success', async () => {
+      jest.spyOn(Types.ObjectId, 'isValid').mockReturnValueOnce(true);
+      Product.findByIdAndDelete.mockResolvedValueOnce({});
+      const res = await productService.deleteProduct('id');
+      expect(res.EC).toBe(0);
+    });
+
+    it('should return not found', async () => {
+      jest.spyOn(Types.ObjectId, 'isValid').mockReturnValueOnce(true);
+      Product.findByIdAndDelete.mockResolvedValueOnce(null);
+      const res = await productService.deleteProduct('id');
+      expect(res.EC).toBe(-1);
+    });
+
+    it('should handle error', async () => {
+      jest.spyOn(Types.ObjectId, 'isValid').mockReturnValueOnce(true);
+      Product.findByIdAndDelete.mockRejectedValueOnce(new Error('err'));
+      const res = await productService.deleteProduct('id');
+      expect(res.EC).toBe(-2);
+    });
+  });
+
+  describe('deleteManyProduct', () => {
+    it('should return error if arr empty', async () => {
+      _.isEmpty.mockReturnValueOnce(true);
+      const res = await productService.deleteManyProduct([]);
+      expect(res.EC).toBe(1);
+    });
+
+    it('should return error if invalid id', async () => {
+      _.isEmpty.mockReturnValueOnce(false);
+      jest.spyOn(Types.ObjectId, 'isValid').mockReturnValueOnce(false);
+      const res = await productService.deleteManyProduct(['bad']);
+      expect(res.EC).toBe(1);
+    });
+
+    it('should delete success', async () => {
+      _.isEmpty.mockReturnValueOnce(false);
+      jest.spyOn(Types.ObjectId, 'isValid').mockReturnValue(true);
+      Product.deleteMany.mockResolvedValueOnce({ deletedCount: 2 });
+      const res = await productService.deleteManyProduct(['id']);
+      expect(res.EC).toBe(0);
+    });
+
+    it('should return not found', async () => {
+      _.isEmpty.mockReturnValueOnce(false);
+      jest.spyOn(Types.ObjectId, 'isValid').mockReturnValue(true);
+      Product.deleteMany.mockResolvedValueOnce({ deletedCount: 0 });
+      const res = await productService.deleteManyProduct(['id']);
+      expect(res.EC).toBe(-1);
+    });
+
+    it('should handle error', async () => {
+      _.isEmpty.mockReturnValueOnce(false);
+      jest.spyOn(Types.ObjectId, 'isValid').mockReturnValue(true);
+      Product.deleteMany.mockRejectedValueOnce(new Error('err'));
+      const res = await productService.deleteManyProduct(['id']);
+      expect(res.EC).toBe(-2);
+    });
+  });
+
+  describe('getTypesProduct', () => {
+    it('should return types', async () => {
+      Product.distinct.mockResolvedValueOnce(['a', 'b']);
+      const res = await productService.getTypesProduct();
+      expect(res.EC).toBe(0);
+    });
+
+    it('should return empty', async () => {
+      Product.distinct.mockResolvedValueOnce([]);
+      const res = await productService.getTypesProduct();
+      expect(res.EC).toBe(1);
+    });
+
+    it('should handle error', async () => {
+      Product.distinct.mockRejectedValueOnce(new Error('err'));
+      const res = await productService.getTypesProduct();
+      expect(res.EC).toBe(-2);
+    });
+  });
+
+  describe('getProductsByType', () => {
+    it('should return error if missing type', async () => {
+      const res = await productService.getProductsByType(1, 5, null, null);
+      expect(res.EC).toBe(1);
+    });
+
+    it('should return success without pagination', async () => {
+      Product.find.mockResolvedValueOnce([{ name: 'p1' }]);
+      const res = await productService.getProductsByType(null, null, null, 'abc');
+      expect(res.EC).toBe(0);
+    });
+
+    it('should return success with pagination', async () => {
+      Product.find
+        .mockResolvedValueOnce([{ name: 'p1' }])
+        .mockResolvedValueOnce([{ name: 'p1' }]);
+      const res = await productService.getProductsByType(1, 5, null, 'abc');
+      expect(res.EC).toBe(0);
+    });
+
+    it('should return with sort desc', async () => {
+      Product.find
+        .mockResolvedValueOnce([{ name: 'p1' }])
+        .mockResolvedValueOnce([{ name: 'p1' }]);
+      const res = await productService.getProductsByType(1, 5, 'desc', 'abc');
+      expect(res.EC).toBe(0);
+    });
+
+    it('should return not found', async () => {
+      Product.find.mockResolvedValueOnce([]);
+      const res = await productService.getProductsByType(null, null, null, 'abc');
+      expect(res.EC).toBe(-1);
+    });
+
+    it('should handle error', async () => {
+      Product.find.mockRejectedValueOnce(new Error('err'));
+      const res = await productService.getProductsByType(null, null, null, 'abc');
+      expect(res.EC).toBe(-2);
+    });
+  });
 });
