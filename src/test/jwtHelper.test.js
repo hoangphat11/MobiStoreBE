@@ -1,13 +1,9 @@
-// jwtHelpers.test.js
 import Jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
-import {
-    generateAccessToken,
-    generateRefreshToken,
-    refreshNewTokenService
-} from '../utils/jwtHelpers';
 
-// Mock .env
+import * as jwtHelpers from '../utils/jwtHelpers';
+
+// Giả lập biến môi trường
 process.env.JWT_ACCESS_TOKEN_SECRET = 'access-secret';
 process.env.JWT_REFRESH_TOKEN_SECRET = 'refresh-secret';
 
@@ -17,86 +13,111 @@ jest.mock('jsonwebtoken', () => ({
     verify: jest.fn()
 }));
 
+// Tạo một class giả lập Mongoose Document
+class MockMongooseDoc {
+    toObject() {
+        return { foo: 'bar' };
+    }
+}
+
 describe('jwtHelpers', () => {
-    afterEach(() => {
+
+    beforeEach(() => {
         jest.clearAllMocks();
     });
 
     describe('generateAccessToken', () => {
-        it('should sign token when payload is mongoose.Document', () => {
-            const mockDoc = new mongoose.Document({}, new mongoose.Schema({ name: String }));
-            mockDoc.toObject = jest.fn().mockReturnValue({ id: '123' });
+        it('should sign with plain object if payload is not mongoose document', () => {
+            const payload = { userId: 123 };
             Jwt.sign.mockReturnValue('access-token');
 
-            const token = generateAccessToken(mockDoc);
+            const token = jwtHelpers.generateAccessToken(payload);
 
-            expect(mockDoc.toObject).toHaveBeenCalled();
-            expect(Jwt.sign).toHaveBeenCalledWith({ id: '123' }, 'access-secret', { expiresIn: '15m' });
+            expect(Jwt.sign).toHaveBeenCalledWith(payload, 'access-secret', { expiresIn: '15m' });
             expect(token).toBe('access-token');
         });
 
-        it('should sign token when payload is plain object', () => {
-            const payload = { id: '456' };
-            Jwt.sign.mockReturnValue('access-token-plain');
+        it('should sign with payload.toObject() if payload is mongoose document', () => {
+            const payload = {
+                toObject: () => ({ foo: 'bar' })
+            };
+            Object.setPrototypeOf(payload, mongoose.Document.prototype); // quan trọng
 
-            const token = generateAccessToken(payload);
+            Jwt.sign.mockReturnValue('access-token');
 
-            expect(Jwt.sign).toHaveBeenCalledWith(payload, 'access-secret', { expiresIn: '15m' });
-            expect(token).toBe('access-token-plain');
+            const token = jwtHelpers.generateAccessToken(payload);
+
+            expect(Jwt.sign).toHaveBeenCalledWith(payload.toObject(), 'access-secret', { expiresIn: '15m' });
+            expect(token).toBe('access-token');
         });
 
-        it('should throw error when sign fails', () => {
-            const payload = { id: '789' };
-            Jwt.sign.mockImplementation(() => { throw new Error('sign failed'); });
+        it('should throw error and log if Jwt.sign throws', () => {
+            const payload = { userId: 123 };
+            const error = new Error('sign failed');
+            Jwt.sign.mockImplementation(() => { throw error; });
+            console.error = jest.fn();
 
-            expect(() => generateAccessToken(payload)).toThrow('Failed to generate access token');
+            expect(() => jwtHelpers.generateAccessToken(payload)).toThrow('Failed to generate access token');
+            expect(console.error).toHaveBeenCalledWith('Error generating access token:', error);
         });
     });
 
     describe('generateRefreshToken', () => {
-        it('should sign refresh token from mongoose.Document', () => {
-            const mockDoc = new mongoose.Document({}, new mongoose.Schema({ name: String }));
-            mockDoc.toObject = jest.fn().mockReturnValue({ id: '123' });
+        it('should sign with payload.toObject()', () => {
+            const payload = new MockMongooseDoc();
             Jwt.sign.mockReturnValue('refresh-token');
 
-            const token = generateRefreshToken(mockDoc);
+            const token = jwtHelpers.generateRefreshToken(payload);
 
-            expect(Jwt.sign).toHaveBeenCalledWith({ id: '123' }, 'refresh-secret', { expiresIn: '1d' });
+            expect(Jwt.sign).toHaveBeenCalledWith(payload.toObject(), 'refresh-secret', { expiresIn: '1d' });
             expect(token).toBe('refresh-token');
         });
 
-        it('should throw error when sign fails', () => {
-            const mockDoc = new mongoose.Document({}, new mongoose.Schema({ name: String }));
-            mockDoc.toObject = jest.fn().mockReturnValue({ id: 'error' });
-            Jwt.sign.mockImplementation(() => { throw new Error('refresh sign failed'); });
+        it('should throw error and log if Jwt.sign throws', () => {
+            const payload = new MockMongooseDoc();
+            const error = new Error('sign failed');
+            Jwt.sign.mockImplementation(() => { throw error; });
+            console.error = jest.fn();
 
-            expect(() => generateRefreshToken(mockDoc)).toThrow('Failed to generate refresh token');
+            expect(() => jwtHelpers.generateRefreshToken(payload)).toThrow('Failed to generate refresh token');
+            expect(console.error).toHaveBeenCalledWith('Error generating refresh token:', error);
         });
     });
 
     describe('refreshNewTokenService', () => {
-        it('should verify token and generate new access token', () => {
-            const payload = { id: '123', iat: 111, exp: 222 };
-            Jwt.verify.mockReturnValue(payload);
-            const newAccess = 'new-access-token';
-            jest.spyOn(require('../utils/jwtHelpers'), 'generateAccessToken').mockReturnValue(newAccess);
+        it('should return new access token if token is valid', () => {
+            const token = 'valid-refresh-token';
+            const decoded = { iat: 1000, exp: 2000, userId: 123 };
+            Jwt.verify.mockReturnValue(decoded);
 
-            const result = refreshNewTokenService('refresh-token');
+            // Không mock generateAccessToken, vì không kiểm tra spy được
+            // Thay vào đó mock Jwt.sign để kiểm soát kết quả generateAccessToken bên trong
+            Jwt.sign.mockReturnValue('new-access-token');
 
-            expect(Jwt.verify).toHaveBeenCalledWith('refresh-token', 'refresh-secret');
-            expect(result).toBe(newAccess);
+            const result = jwtHelpers.refreshNewTokenService(token);
+
+            expect(Jwt.verify).toHaveBeenCalledWith(token, 'refresh-secret');
+            expect(result).toBe('new-access-token');  // kiểm tra đúng kết quả trả về
         });
 
-        it('should return null if verify throws', () => {
-            Jwt.verify.mockImplementation(() => { throw new Error('invalid token'); });
+        it('should return null and log error if Jwt.verify throws', () => {
+            const token = 'invalid-token';
+            const error = new Error('jwt malformed');
+            Jwt.verify.mockImplementation(() => { throw error; });
+            console.error = jest.fn();
 
-            const result = refreshNewTokenService('bad-token');
+            const result = jwtHelpers.refreshNewTokenService(token);
+
+            expect(console.error).toHaveBeenCalledWith('Error refresh new token:', error);
             expect(result).toBeNull();
         });
 
-        it('should return undefined if no token is provided', () => {
-            const result = refreshNewTokenService();
+        it('should return undefined if token is falsy', () => {
+            const result = jwtHelpers.refreshNewTokenService(null);
             expect(result).toBeUndefined();
         });
     });
+
+
+
 });

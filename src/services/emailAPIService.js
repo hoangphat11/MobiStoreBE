@@ -92,4 +92,4 @@ const sendSimpleEmail = async (dataSend) => {
 //     });
 // }
 
-module.exports = { sendSimpleEmail }
+module.exports = { sendSimpleEmail, getBodyHTMLEmail }

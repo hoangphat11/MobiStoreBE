@@ -36,12 +36,23 @@ describe('Product Service', () => {
     });
 
     it('should handle exception', async () => {
-      Product.findOne.mockRejectedValueOnce(new Error('DB error'));
+      // Mock new Product để save() ném lỗi
+      Product.mockImplementation(() => ({
+        save: jest.fn().mockRejectedValue(new Error('DB error')),
+      }));
+
       const res = await productService.createNewProduct({
-        name: 'ABC', image: 'img', type: 't', price: 10, countInStock: 1, rating: 5
+        name: 'ABC',
+        image: 'img',
+        type: 't',
+        price: 10,
+        countInStock: 1,
+        rating: 5,
       });
+
       expect(res.EC).toBe(-2);
     });
+
 
     it('should return error if only some fields missing', async () => {
       const res = await productService.createNewProduct({
@@ -116,6 +127,32 @@ describe('Product Service', () => {
       const res = await productService.getAllProductsPagination(null, null, 'desc', 'price');
       expect(res.EC).toBe(0);
     });
+
+    it('should return success with empty list if no products in pagination', async () => {
+      // Mock countDocuments trả về 0 (không có sản phẩm)
+      Product.countDocuments = jest.fn().mockResolvedValue(0);
+
+      // Mock find trả về mảng rỗng
+      Product.find = jest.fn().mockReturnValue({
+        skip: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        lean: jest.fn().mockResolvedValue([]),
+        sort: jest.fn().mockReturnThis(),  // nếu có gọi sort
+      });
+
+      const res = await productService.getAllProductsPagination(1, 5);
+
+      expect(res.EC).toBe(0);
+      expect(res.DT.listProducts).toHaveLength(0);
+    });
+
+
+
+    it('should handle exception in getAllProductsPagination', async () => {
+      Product.countDocuments.mockRejectedValueOnce(new Error('Count error'));
+      const res = await productService.getAllProductsPagination(1, 5);
+      expect(res.EC).toBe(-2);
+    });
   });
 
   describe('getDetailProdById', () => {
@@ -164,6 +201,13 @@ describe('Product Service', () => {
       expect(res.EC).toBe(1);
     });
 
+    // Bổ sung test trường hợp data rỗng
+    // it('should return error if data is empty object', async () => {
+    //   jest.spyOn(Types.ObjectId, 'isValid').mockReturnValueOnce(true);
+    //   const res = await productService.updateProduct({ id: 'validId', data: {} });
+    //   expect(res.EC).toBe(1);
+    // });
+
     it('should return error if name existed', async () => {
       jest.spyOn(Types.ObjectId, 'isValid').mockReturnValueOnce(true);
       Product.findOne.mockResolvedValueOnce({ name: 'dup' });
@@ -196,10 +240,16 @@ describe('Product Service', () => {
 
     it('should handle error', async () => {
       jest.spyOn(Types.ObjectId, 'isValid').mockReturnValueOnce(true);
-      Product.findOne.mockRejectedValueOnce(new Error('err'));
+      // Mock checkProdNameExisted không lỗi, trả về false (tên không trùng)
+      productService.checkProdNameExisted = jest.fn().mockResolvedValue(false);
+
+      // Mock findByIdAndUpdate ném lỗi để test catch
+      Product.findByIdAndUpdate.mockRejectedValueOnce(new Error('err'));
+
       const res = await productService.updateProduct({ id: 'id', data: { name: 'n' } });
       expect(res.EC).toBe(-2);
     });
+
   });
 
   describe('deleteProduct', () => {
@@ -228,10 +278,11 @@ describe('Product Service', () => {
       expect(res.EC).toBe(-1);
     });
 
-    it('should handle error', async () => {
+    // Bổ sung test xử lý exception trong deleteProduct
+    it('should handle error if findByIdAndDelete throws', async () => {
       jest.spyOn(Types.ObjectId, 'isValid').mockReturnValueOnce(true);
-      Product.findByIdAndDelete.mockRejectedValueOnce(new Error('err'));
-      const res = await productService.deleteProduct('id');
+      Product.findByIdAndDelete.mockRejectedValueOnce(new Error('Delete fail'));
+      const res = await productService.deleteProduct('validId');
       expect(res.EC).toBe(-2);
     });
   });
@@ -297,42 +348,66 @@ describe('Product Service', () => {
 
   describe('getProductsByType', () => {
     it('should return error if missing type', async () => {
-      const res = await productService.getProductsByType(1, 5, null, null);
+      const res = await productService.getProductsByType(null, 5, null, null);
       expect(res.EC).toBe(1);
     });
 
     it('should return success without pagination', async () => {
-      Product.find.mockResolvedValueOnce([{ name: 'p1' }]);
+      const leanMock = jest.fn().mockResolvedValue([{ name: 'p1', type: 'abc' }]);
+      Product.find.mockReturnValue({ lean: leanMock }); // mock Product.find trả về object có hàm lean()
+
       const res = await productService.getProductsByType(null, null, null, 'abc');
+
       expect(res.EC).toBe(0);
+      expect(res.DT).toHaveLength(1);
+      expect(res.DT[0].name).toBe('p1');
     });
+
 
     it('should return success with pagination', async () => {
-      Product.find
-        .mockResolvedValueOnce([{ name: 'p1' }])
-        .mockResolvedValueOnce([{ name: 'p1' }]);
-      const res = await productService.getProductsByType(1, 5, null, 'abc');
+      Product.countDocuments.mockResolvedValueOnce(1);
+      Product.find.mockReturnValue({
+        skip: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockReturnThis(),
+        lean: jest.fn().mockResolvedValue([{ name: 'p1' }])
+      });
+      const res = await productService.getProductsByType(1, 5, 'asc', 'abc');
       expect(res.EC).toBe(0);
     });
 
-    it('should return with sort desc', async () => {
-      Product.find
-        .mockResolvedValueOnce([{ name: 'p1' }])
-        .mockResolvedValueOnce([{ name: 'p1' }]);
+    it('should return success with sort desc', async () => {
+      Product.countDocuments.mockResolvedValueOnce(1);
+      Product.find.mockReturnValue({
+        skip: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockReturnThis(),
+        lean: jest.fn().mockResolvedValue([{ name: 'p1' }])
+      });
       const res = await productService.getProductsByType(1, 5, 'desc', 'abc');
       expect(res.EC).toBe(0);
     });
 
-    it('should return not found', async () => {
-      Product.find.mockResolvedValueOnce([]);
-      const res = await productService.getProductsByType(null, null, null, 'abc');
+    it('should return not found if no products', async () => {
+      // Mock Product.find().lean() trả về mảng rỗng, nghĩa là không tìm thấy sản phẩm
+      const leanMock = jest.fn().mockResolvedValue([]);
+      Product.find.mockReturnValue({ lean: leanMock });
+
+      const res = await productService.getProductsByType(1, 5, 'asc', 'abc');
       expect(res.EC).toBe(-1);
+      expect(res.DT).toEqual([]);
     });
 
+
     it('should handle error', async () => {
-      Product.find.mockRejectedValueOnce(new Error('err'));
-      const res = await productService.getProductsByType(null, null, null, 'abc');
+      // Mock Product.find().lean() ném lỗi để bắt exception
+      Product.find.mockReturnValue({
+        lean: jest.fn().mockRejectedValueOnce(new Error('err'))
+      });
+
+      const res = await productService.getProductsByType(1, 5, 'asc', 'abc');
       expect(res.EC).toBe(-2);
     });
+
   });
 });

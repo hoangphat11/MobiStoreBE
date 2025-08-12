@@ -33,7 +33,7 @@ describe('emailAPIService', () => {
     });
 
     test('getBodyHTMLEmail should generate correct HTML (default case)', () => {
-        const getBodyHTMLEmail = emailService.__getBodyHTMLEmailForTest;
+        const getBodyHTMLEmail = emailService.getBodyHTMLEmail;
         const html = getBodyHTMLEmail(sampleData);
 
         expect(html).toContain(sampleData.shippingAddress.fullName);

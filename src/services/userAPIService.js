@@ -1,7 +1,9 @@
 require('dotenv').config();
 import bcrypt from 'bcryptjs';
 import User from '../models/UserModel';
-import { generateAccessToken, generateRefreshToken, refreshNewTokenService } from '../utils/JWTHelpers';
+import {
+    generateAccessToken, generateRefreshToken, refreshNewTokenService
+} from '../utils/JWTHelpers';
 import { Types } from 'mongoose';
 
 const hashUserPassword = (password) => {
@@ -77,7 +79,7 @@ const registerNewUser = async (rawUserData) => {
             DT: '',
         }
     } catch (error) {
-      //  console.log('>>> check error from registerNewUser():', error);
+        //  console.log('>>> check error from registerNewUser():', error);
         return {
             EM: `Something wrongs in Service  registerNewUser() `,
             EC: -2,

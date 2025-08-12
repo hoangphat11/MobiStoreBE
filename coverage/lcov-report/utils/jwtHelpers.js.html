@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">20% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>4/20</span>
+                <span class='fraction'>20/20</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/4</span>
+                <span class='fraction'>4/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">20% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>4/20</span>
+                <span class='fraction'>20/20</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -104,81 +104,81 @@
 <a name='L39'></a><a href='#L39'>39</a>
 <a name='L40'></a><a href='#L40'>40</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import Jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 require('dotenv').config();
 &nbsp;
-export const generateAccessToken = <span class="fstat-no" title="function not covered" >(p</span>ayload) =&gt; {
+export const generateAccessToken = (payload) =&gt; {
     // vì object payload là Mongoose object =&gt; payload.toObject() để đưa về plain object
-<span class="cstat-no" title="statement not covered" >    try {</span>
-        const secretKey = <span class="cstat-no" title="statement not covered" >process.env.JWT_ACCESS_TOKEN_SECRET;</span>
-<span class="cstat-no" title="statement not covered" >        return (payload instanceof mongoose.Document) ? Jwt.sign(payload.toObject(), secretKey, { expiresIn: '15m' })</span>
+    try {
+        const secretKey = process.env.JWT_ACCESS_TOKEN_SECRET;
+        return (payload instanceof mongoose.Document) ? Jwt.sign(payload.toObject(), secretKey, { expiresIn: '15m' })
             : Jwt.sign(payload, secretKey, { expiresIn: '15m' });
     }
     catch (error) {
-<span class="cstat-no" title="statement not covered" >        console.error('Error generating access token:', error);</span>
-<span class="cstat-no" title="statement not covered" >        throw new Error('Failed to generate access token');</span>
+        console.error('Error generating access token:', error);
+        throw new Error('Failed to generate access token');
     }
 };
 &nbsp;
-export const generateRefreshToken = <span class="fstat-no" title="function not covered" >(p</span>ayload) =&gt; {
+export const generateRefreshToken = (payload) =&gt; {
     // vì object payload là Mongoose object =&gt; payload.toObject() để đưa về plain object
-<span class="cstat-no" title="statement not covered" >    try {</span>
-        const secretKey = <span class="cstat-no" title="statement not covered" >process.env.JWT_REFRESH_TOKEN_SECRET;</span>
-<span class="cstat-no" title="statement not covered" >        return Jwt.sign(payload.toObject(), secretKey, { expiresIn: '1d' });</span>
+    try {
+        const secretKey = process.env.JWT_REFRESH_TOKEN_SECRET;
+        return Jwt.sign(payload.toObject(), secretKey, { expiresIn: '1d' });
     }
     catch (error) {
-<span class="cstat-no" title="statement not covered" >        console.error('Error generating refresh token:', error);</span>
-<span class="cstat-no" title="statement not covered" >        throw new Error('Failed to generate refresh token');</span>
+        console.error('Error generating refresh token:', error);
+        throw new Error('Failed to generate refresh token');
     }
 };
 &nbsp;
-export const refreshNewTokenService = <span class="fstat-no" title="function not covered" >(t</span>oken) =&gt; {
-<span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >        if (token) {</span>
-            const { iat, exp, ...rest } = <span class="cstat-no" title="statement not covered" >Jwt.verify(token, process.env.JWT_REFRESH_TOKEN_SECRET);</span>
-<span class="cstat-no" title="statement not covered" >            return generateAccessToken(rest);</span>
+export const refreshNewTokenService = (token) =&gt; {
+    try {
+        if (token) {
+            const { iat, exp, ...rest } = Jwt.verify(token, process.env.JWT_REFRESH_TOKEN_SECRET);
+            return generateAccessToken(rest);
         }
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >        console.error('Error refresh new token:', error);</span>
-<span class="cstat-no" title="statement not covered" >        return null;</span>
+        console.error('Error refresh new token:', error);
+        return null;
     }
 };</pre></td></tr></table></pre>
 
@@ -187,7 +187,7 @@ export const refreshNewTokenService = <span class="fstat-no" title="function not
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-08T06:22:55.044Z
+                at 2025-08-12T06:53:12.548Z
             </div>
         <script src="../prettify.js"></script>
         <script>
