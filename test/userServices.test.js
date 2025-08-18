@@ -1,17 +1,17 @@
 // __tests__/userAPIService.test.js
-import * as service from '../services/userAPIService';
-import User from '../models/UserModel';
+import * as service from '../src/services/userAPIService';
+import User from '../src/models/UserModel';
 import bcrypt from 'bcryptjs';
 import {
   generateAccessToken,
   generateRefreshToken,
   refreshNewTokenService
-} from '../utils/JWTHelpers';
+} from '../src/utils/jwtHelpers';
 import { Types } from 'mongoose';
 
-jest.mock('../models/UserModel');
+jest.mock('../src/models/UserModel');
 jest.mock('bcryptjs');
-jest.mock('../utils/JWTHelpers');
+jest.mock('../src/utils/jwtHelpers');
 
 describe('userAPIService', () => {
   let res;
@@ -275,9 +275,17 @@ describe('userAPIService', () => {
   });
 
   // ===== refreshNewToken =====
+  // ===== refreshNewToken =====
   describe('refreshNewToken', () => {
+    beforeEach(() => {
+      // mặc định return null để tránh gọi code gốc
+      refreshNewTokenService.mockReturnValue(null);
+    });
+
     it('missing token', async () => {
+      // khi không truyền token, service sẽ check và trả về EC=1
       const result = await service.refreshNewToken();
+      expect(refreshNewTokenService).not.toHaveBeenCalled(); // không gọi luôn
       expect(result.EC).toBe(1);
     });
 
@@ -285,6 +293,7 @@ describe('userAPIService', () => {
       refreshNewTokenService.mockReturnValue('newtoken');
       const result = await service.refreshNewToken('token');
       expect(result.EC).toBe(0);
+      expect(result.DT).toBe('newtoken');
     });
 
     it('invalid token', async () => {
@@ -301,6 +310,7 @@ describe('userAPIService', () => {
       expect(result.EC).toBe(-2);
     });
   });
+
 
   // ===== updateUser =====
   describe('updateUser', () => {

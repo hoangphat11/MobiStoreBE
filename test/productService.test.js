@@ -1,9 +1,9 @@
 import { Types } from 'mongoose';
 import _ from 'lodash';
-import Product from '../models/ProductModel';
-import * as productService from '../services/productAPIService';
+import Product from '../src/models/ProductModel';
+import * as productService from '../src/services/productAPIService';
 
-jest.mock('../models/ProductModel');
+jest.mock('../src/models/ProductModel');
 jest.mock('lodash');
 
 describe('Product Service', () => {

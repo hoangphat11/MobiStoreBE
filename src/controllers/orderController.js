@@ -12,7 +12,7 @@ const handleGetAllOrders = async (req, res) => {
         console.log('>>> check error from handleGetAllOrders():', error);
         return res.status(500).json({
             EM: 'error from server',
-            EC: -1,
+            EC: -1, 
             DT: '',
         });
     }

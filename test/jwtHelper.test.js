@@ -1,7 +1,7 @@
 import Jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 
-import * as jwtHelpers from '../utils/jwtHelpers';
+import * as jwtHelpers from '../src/utils/jwtHelpers';
 
 // Giả lập biến môi trường
 process.env.JWT_ACCESS_TOKEN_SECRET = 'access-secret';

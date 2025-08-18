@@ -1,7 +1,7 @@
 // __tests__/emailAPIService.test.js
 import nodemailer from 'nodemailer';
 import { jest } from '@jest/globals';
-import * as emailService from '../services/emailAPIService';
+import * as emailService from '../src/services/emailAPIService';
 
 jest.mock('nodemailer');
 

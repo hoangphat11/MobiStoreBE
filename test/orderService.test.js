@@ -1,16 +1,16 @@
 // src/test/orderAPIService.test.js
 import { Types } from 'mongoose';
-import Order from '../models/OrderProduct';
-import Product from '../models/ProductModel';
-import User from '../models/UserModel';
-import emailAPIService from '../services/emailAPIService';
+import Order from '../src/models/OrderProduct';
+import Product from '../src/models/ProductModel';
+import User from '../src/models/UserModel';
+import emailAPIService from '../src/services/emailAPIService';
 
-import * as orderService from '../services/orderAPIService';
+import * as orderService from '../src/services/orderAPIService';
 
-jest.mock('../models/OrderProduct');
-jest.mock('../models/ProductModel');
-jest.mock('../models/UserModel');
-jest.mock('../services/emailAPIService');
+jest.mock('../src/models/OrderProduct');
+jest.mock('../src/models/ProductModel');
+jest.mock('../src/models/UserModel');
+jest.mock('../src/services/emailAPIService');
 
 // Helper bỏ dấu tiếng Việt để test message chứa tiếng Việt dễ hơn
 function removeVietnameseTones(str) {
