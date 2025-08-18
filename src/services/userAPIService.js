@@ -38,7 +38,9 @@ const registerNewUser = async (rawUserData) => {
             }
         }
         // check email validation:
-        const regEmail = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+        // Email đơn giản, đủ cho 99% use case
+        const regEmail = /^[a-zA-Z0-9._%+-]{1,64}@[a-zA-Z0-9.-]{1,255}\.[a-zA-Z]{2,}$/;
+
         if (!regEmail.test(rawUserData.email)) {
             return {
                 EM: 'Email is not valid',

@@ -3,6 +3,7 @@ import userController from '../controllers/userController';
 import productController from '../controllers/productController';
 import orderController from '../controllers/orderController';
 import paymentController from '../controllers/paymentController';
+//import notificationController from "../controllers/notificationController";
 import { authPermissionMiddleware, authUserMiddleware } from '../middleware/authMiddleWare';
 
 const router = express.Router();
@@ -42,7 +43,12 @@ const initAPIRoutes = (app) => {
     //routes for Payment (Paypal)
     router.get('/payment/config', paymentController.handleGetPaymentConfig);
 
+    //router for Notifications
+    // router.post("/", authMiddleware, notificationController.createNotification);
+    // router.get("/:userId", authMiddleware, notificationController.getNotificationsByUser);
+    // router.put("/:notiId/read", authMiddleware, notificationController.markAsRead);
 
+    
     return app.use("/api/v1/", router);
 }
 
