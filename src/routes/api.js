@@ -3,53 +3,66 @@ import userController from '../controllers/userController';
 import productController from '../controllers/productController';
 import orderController from '../controllers/orderController';
 import paymentController from '../controllers/paymentController';
-//import notificationController from "../controllers/notificationController";
-import { authPermissionMiddleware, authUserMiddleware } from '../middleware/authMiddleWare';
+import { authPermissionMiddleware, authUserMiddleware, authUser } from '../middleware/authMiddleWare';
+import { createNotification, fetchAllNotifications } from "../controllers/notificationController.js";
+//import { createNotification, fetchNotificationsByUser } from "../controllers/notificationController.js";
 
 const router = express.Router();
+
 const initAPIRoutes = (app) => {
-    // routes for Login - Register
+    // ----------------- AUTH -----------------
     router.post("/login", userController.handleLogin);
     router.post("/register", userController.handleRegister);
     router.post("/logout", userController.handleLogout);
 
-    // routes for USER:
+    // ----------------- USER -----------------
     router.get('/', authPermissionMiddleware, userController.handleGetAllUsers);
     router.get('/users/:id', authUserMiddleware, userController.handleGetDetailUser);
     router.get('/refresh-token', userController.handleRefreshToken);
     router.put('/users/update', authUserMiddleware, userController.handleUpdateUser);
     router.delete('/users/delete', authPermissionMiddleware, userController.handleDeleteUser);
 
-    // routes for PRODUCT:
+    // ----------------- PRODUCT -----------------
     router.get('/product', productController.handleGetAllProducts);
     router.get('/product/get-all-types', productController.handleGetTypesProduct);
-    router.get('/product/get-products-by-type/:prodType', productController.handleGetProductsByType)
+    router.get('/product/get-products-by-type/:prodType', productController.handleGetProductsByType);
     router.get('/product/:id', productController.handleGetDetailProd);
     router.post('/product/create', authPermissionMiddleware, productController.handleCreateNewProduct);
     router.put('/product/update', authPermissionMiddleware, productController.handleUpdateProduct);
     router.delete('/product/delete', authPermissionMiddleware, productController.handleDeleteProduct);
     router.delete('/product/delete-many', authPermissionMiddleware, productController.handleDeleteManyProduct);
 
-
-
-    // routes for ORDER:
+    // ----------------- ORDER -----------------
     router.get('/order', authPermissionMiddleware, orderController.handleGetAllOrders);
     router.get('/order/get-orders-by-userId/:id', authUserMiddleware, orderController.handleGetOrdersByUserId);
     router.get('/order/get-detail-order/:orderId', authUserMiddleware, orderController.handleGetDetailOrder);
     router.post('/order/create', authUserMiddleware, orderController.handleCreateNewOrder);
     router.delete('/order/delete/:orderId', orderController.handleDeleteOrder);
     router.put('/order/update-status/:orderId', authPermissionMiddleware, orderController.handleUpdateOrderStatus);
+    router.put("/orders/:orderId/payment", orderController.handleUpdatePaymentStatus);
 
-    //routes for Payment (Paypal)
+    // ----------------- PAYMENT -----------------
     router.get('/payment/config', paymentController.handleGetPaymentConfig);
 
-    //router for Notifications
-    // router.post("/", authMiddleware, notificationController.createNotification);
-    // router.get("/:userId", authMiddleware, notificationController.getNotificationsByUser);
-    // router.put("/:notiId/read", authMiddleware, notificationController.markAsRead);
+    // ----------------- NOTIFICATIONS -----------------
+    // Tất cả route notification đều cần login
 
-    
-    return app.use("/api/v1/", router);
+    // router.post("/create", authUser, createNotification);
+
+    // Lấy tất cả notification của user
+    // router.get("/", authUser, fetchAllNotifications);
+
+
+    //  router.post("/create", createNotification);
+    //  router.get("/", fetchAllNotifications);
+
+    // Tạo notification (user phải login)
+    router.post("/create", authUserMiddleware, createNotification);
+
+    // Lấy notification của user hiện tại
+    router.get("/", authUserMiddleware, fetchAllNotifications);
+    // ----------------- PREFIX API -----------------
+    return app.use("/api/v1", router);
 }
 
 export default initAPIRoutes;

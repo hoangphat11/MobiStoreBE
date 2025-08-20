@@ -1,130 +1,86 @@
-// import Notification from "../models/NotificationModel";
-// import { Types } from "mongoose";
 
-// const createNotification = async ({ userId, message, type = "system" }) => {
+import Notification from "../models/NotificationModel.js";
+
+/**
+ * Tạo thông báo mới gắn với user
+ * @param {ObjectId} userId - ID của user
+ * @param {Array} orderItems - danh sách sản phẩm trong đơn
+ */
+export const addNotification = async (orderItems, userId) => {
+    if (!Array.isArray(orderItems) || orderItems.length === 0) return null;
+
+    const firstProductName = orderItems[0]?.name || "Sản phẩm";
+    const total = orderItems.reduce((sum, item) => sum + (item.price || 0) * (item.amount || 1), 0);
+
+    const title = "Thông báo đơn hàng"; // 👈 thêm title
+    const message = `Đơn hàng ${firstProductName}… đã đặt thành công! Tổng: ${total}$`;
+
+    try {
+        const newNotification = new Notification({ title, message, userId });
+        await newNotification.save();
+        return newNotification;
+    } catch (error) {
+        console.error("Lỗi lưu thông báo:", error);
+        return null;
+    }
+};
+
+
+
+// Lấy tất cả thông báo, có thể lọc theo userId
+export const getAllNotifications = async (userId = null) => {
+    try {
+        let query = {};
+        if (userId) query.userId = userId;
+
+        const notifications = await Notification.find(query)
+            .populate("userId", "name email avatar") // lấy thông tin user
+            .sort({ createdAt: -1 });
+
+        return notifications;
+    } catch (error) {
+        console.error("Lỗi lấy thông báo:", error);
+        return [];
+    }
+};
+
+// import Notification from "../models/NotificationModel.js";
+
+// // Tạo thông báo mới
+// export const addNotification = async (orderItems) => {
+//     if (!Array.isArray(orderItems) || orderItems.length === 0) {
+//         console.error("Order thiếu dữ liệu:", orderItems);
+//         return null;
+//     }
+
+//     const firstProductName = orderItems[0]?.name || "Sản phẩm";
+//     const total = orderItems.reduce((sum, item) => {
+//         return sum + (item.price || 0) * (item.amount || 1);
+//     }, 0);
+
+//     const message = `Đơn hàng ${firstProductName}… đã đặt thành công! Tổng: ${total}$`;
+
 //     try {
-//         if (!userId || !message) {
-//             return {
-//                 EM: "Missing required parameter!",
-//                 EC: 1,
-//                 DT: "",
-//             };
-//         }
-
-//         if (!Types.ObjectId.isValid(userId)) {
-//             return {
-//                 EM: "Invalid user ID format!",
-//                 EC: 1,
-//                 DT: "",
-//             };
-//         }
-
-//         const newNoti = new Notification({ user: userId, message, type });
-//         await newNoti.save();
-
-//         const { __v, updatedAt, ...cleanNoti } = newNoti.toObject();
-
-//         return {
-//             EM: "Notification created successfully",
-//             EC: 0,
-//             DT: cleanNoti,
-//         };
+//         const newNotification = new Notification({  message });
+//         await newNotification.save(); // lưu vào database
+//         return newNotification;
 //     } catch (error) {
-//         console.log(">>> check error createNotification():", error);
-//         return {
-//             EM: "Something wrong in Service createNotification()",
-//             EC: -2,
-//             DT: "",
-//         };
+//         console.error("Lỗi lưu thông báo:", error);
+//         return null;
 //     }
 // };
 
-// const getNotificationsByUser = async (userId) => {
+// // Lấy tất cả thông báo
+// export const getAllNotifications = async () => {
 //     try {
-//         if (!userId) {
-//             return {
-//                 EM: "Missing required parameter!",
-//                 EC: 1,
-//                 DT: "",
-//             };
-//         }
-
-//         if (!Types.ObjectId.isValid(userId)) {
-//             return {
-//                 EM: "Invalid user ID format!",
-//                 EC: 1,
-//                 DT: "",
-//             };
-//         }
-
-//         const notis = await Notification.find({ user: userId })
-//             .sort({ createdAt: -1 })
-//             .select("-__v -updatedAt");
-
-//         return {
-//             EM: "Get notifications success",
-//             EC: 0,
-//             DT: notis,
-//         };
+//         const notifications = await Notification.find().sort({ createdAt: -1 });
+//         return notifications;
 //     } catch (error) {
-//         console.log(">>> check error getNotificationsByUser():", error);
-//         return {
-//             EM: "Something wrong in Service getNotificationsByUser()",
-//             EC: -2,
-//             DT: "",
-//         };
+//         console.error("Lỗi lấy thông báo:", error);
+//         return [];
 //     }
 // };
 
-// const markAsRead = async (notiId, userId) => {
-//     try {
-//         if (!notiId || !userId) {
-//             return {
-//                 EM: "Missing required parameter!",
-//                 EC: 1,
-//                 DT: "",
-//             };
-//         }
 
-//         if (!Types.ObjectId.isValid(notiId) || !Types.ObjectId.isValid(userId)) {
-//             return {
-//                 EM: "Invalid ID format!",
-//                 EC: 1,
-//                 DT: "",
-//             };
-//         }
 
-//         const noti = await Notification.findOneAndUpdate(
-//             { _id: notiId, user: userId },
-//             { isRead: true },
-//             { new: true }
-//         ).select("-__v -updatedAt");
 
-//         if (!noti) {
-//             return {
-//                 EM: "Notification not found",
-//                 EC: 1,
-//                 DT: "",
-//             };
-//         }
-
-//         return {
-//             EM: "Notification marked as read",
-//             EC: 0,
-//             DT: noti,
-//         };
-//     } catch (error) {
-//         console.log(">>> check error markAsRead():", error);
-//         return {
-//             EM: "Something wrong in Service markAsRead()",
-//             EC: -2,
-//             DT: "",
-//         };
-//     }
-// };
-
-// module.exports = {
-//     createNotification,
-//     getNotificationsByUser,
-//     markAsRead,
-// };

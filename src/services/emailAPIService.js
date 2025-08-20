@@ -37,7 +37,7 @@ const sendSimpleEmail = async (dataSend) => {
     });
     // send mail with defined transport object
     const info = await transporter.sendMail({
-        from: '"MobileStore 👻" <hairyan789@gmail.com>', // sender address
+        from: '"MobileStore 👻"', // sender address
         to: dataSend.email, // list of receivers
         subject: "Thông báo xác nhận đơn hàng - MobileStore", // Subject line
         html: getBodyHTMLEmail(dataSend), // html body

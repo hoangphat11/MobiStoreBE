@@ -291,8 +291,47 @@ const updateOrderStatus = async (orderId, status, userId) => {
         };
     }
 };
+// Cập nhật trạng thái thanh toán (cho COD)
+const updatePaymentStatus = async (id, newStatus) => {
+    try {
+        let order = await Order.findById(id);
 
+        if (!order) {
+            return {
+                EM: "Order not found",
+                EC: 1,
+                DT: null
+            };
+        }
 
+        // Nếu đã thanh toán thì không được thay đổi nữa
+        if (order.paymentStatus === "Paid") {
+            return {
+                EM: "Order has already been paid. Payment status cannot be changed.",
+                EC: 1,
+                DT: order
+            };
+        }
+
+        // Cập nhật trạng thái nếu chưa thanh toán
+        order.paymentStatus = newStatus;
+        await order.save();
+
+        return {
+            EM: "Payment status updated successfully",
+            EC: 0,
+            DT: order
+        };
+
+    } catch (error) {
+        console.log("Error updatePaymentStatus:", error);
+        return {
+            EM: "Something went wrong",
+            EC: -1,
+            DT: null
+        };
+    }
+};
 
 module.exports = {
     getAllOrders,
@@ -300,5 +339,7 @@ module.exports = {
     getOrdersByUserId,
     getDetailOrder,
     deleteOrder,
-    updateOrderStatus
+    updateOrderStatus,
+    updatePaymentStatus, // 👈 thêm export
 };
+

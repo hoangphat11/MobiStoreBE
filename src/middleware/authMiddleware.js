@@ -1,4 +1,7 @@
+
+
 import jwt from "jsonwebtoken";
+import User from "../models/UserModel.js";
 require('dotenv').config();
 
 export const authPermissionMiddleware = (req, res, next) => {
@@ -40,6 +43,9 @@ export const authUserMiddleware = (req, res, next) => {
             });
         const decoded = jwt.verify(req.headers.authorization.split(' ')[1], process.env.JWT_ACCESS_TOKEN_SECRET);
         if (decoded) {
+
+             req.user = decoded; // gán user cho req
+
             if (decoded?.isAdmin || decoded?._id === req.params.id || decoded?._id === req.body.id || decoded?._id === req.query.id)
                 next();
             else {
@@ -58,3 +64,21 @@ export const authUserMiddleware = (req, res, next) => {
         })
     }
 };
+
+// export const authUser = (req, res, next) => {
+//     const authHeader = req.headers.authorization;
+//     if (!authHeader || !authHeader.startsWith("Bearer ")) {
+//         return res.status(401).json({ EM: "No token provided", EC: 1, DT: null });
+//     }
+
+//     const token = authHeader.split(" ")[1];
+//     try {
+//         const decoded = jwt.verify(token, process.env.JWT_ACCESS_TOKEN_SECRET);
+//         if (!decoded._id) return res.status(401).json({ EM: "Token invalid, no userId", EC: 1, DT: null });
+//         req.user = decoded; // đảm bảo có _id
+//         next();
+//     } catch (error) {
+//         return res.status(401).json({ EM: "Invalid token", EC: 1, DT: null });
+//     }
+// };
+
