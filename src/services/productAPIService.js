@@ -185,7 +185,7 @@ const getDetailProdById = async (id) => {
             return {
                 EM: 'Get detail product success',
                 EC: 0,
-                DT: product
+                DT: product  // trả về
             };
         else {
             return {
@@ -237,7 +237,7 @@ const createNewProduct = async (rawData) => {
             DT: '',
         }
     } catch (error) {
-        console.log('>>> check error from createNewProduct():', error);
+       // console.log('>>> check error from createNewProduct():', error);
         return {
             EM: `Something wrongs in Service  createNewProduct() `,
             EC: -2,
@@ -270,7 +270,7 @@ const updateProduct = async ({ id, data }) => {
             : { EM: 'Product is not existed!', EC: -1, DT: '' };
 
     } catch (error) {
-        console.log('>>> check error from updateProduct():', error);
+       // console.log('>>> check error from updateProduct():', error);
         return {
             EM: `Something wrongs in Service updateProduct() `,
             EC: -2,
@@ -345,7 +345,7 @@ const deleteProduct = async (prodId) => {
                 DT: ''
             }
     } catch (error) {
-        console.log('>>> check error from deleteProduct():', error);
+      //  console.log('>>> check error from deleteProduct():', error);
         return {
             EM: `Something wrongs in Service deleteProduct() `,
             EC: -2,
@@ -384,7 +384,7 @@ const deleteManyProduct = async (arrIds) => {
                 DT: ''
             };
     } catch (error) {
-        console.log('>>> check error from deleteProduct():', error);
+       // console.log('>>> check error from deleteProduct():', error);
         return {
             EM: `Something wrongs in Service deleteProduct() `,
             EC: -2,
@@ -411,7 +411,7 @@ const getTypesProduct = async () => {
             }
         }
     } catch (error) {
-        console.log('>>> check error from getTypesProduct():', error);
+     //   console.log('>>> check error from getTypesProduct():', error);
         return {
             EM: `Something wrongs in Service  getTypesProduct() `,
             EC: -2,
@@ -449,7 +449,7 @@ const getProductsByType = async (page, limit, filter, prodType) => {
             return {
                 EM: 'Get products by type success',
                 EC: 0,
-                DT: listProducts
+                DT: listProducts 
             };
         }
         else
@@ -460,7 +460,7 @@ const getProductsByType = async (page, limit, filter, prodType) => {
             }
     }
     catch (error) {
-        console.log('>>> check error from getProductsByType():', error);
+       // console.log('>>> check error from getProductsByType():', error);
         return {
             EM: `Something wrongs in Service  getProductsByType() `,
             EC: -2,

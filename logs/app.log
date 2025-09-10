@@ -1202,3 +1202,31 @@
 2025-09-10 14:38:48 [INFO] Server is running on PORT: 8080 
 2025-09-10 14:38:51 [INFO] Connected to MongoDB successfully 
 2025-09-10 14:38:58 [INFO] Server is running on PORT: 8080 
+2025-09-10 14:39:18 [INFO] Server is running on PORT: 8080 
+2025-09-10 14:39:20 [INFO] Connected to MongoDB successfully 
+2025-09-10 14:41:26 [INFO] Server is running on PORT: 8080 
+2025-09-10 14:41:28 [INFO] Connected to MongoDB successfully 
+2025-09-10 14:41:56 [INFO] Server is running on PORT: 8080 
+2025-09-10 14:41:57 [INFO] Connected to MongoDB successfully 
+2025-09-10 14:42:29 [INFO] Server is running on PORT: 8080 
+2025-09-10 14:42:30 [INFO] Connected to MongoDB successfully 
+2025-09-10 14:42:55 [INFO] Server is running on PORT: 8080 
+2025-09-10 14:42:55 [INFO] Connected to MongoDB successfully 
+2025-09-10 14:43:11 [INFO] Server is running on PORT: 8080 
+2025-09-10 14:43:12 [INFO] Connected to MongoDB successfully 
+2025-09-10 14:43:18 [INFO] Server is running on PORT: 8080 
+2025-09-10 14:43:18 [INFO] Connected to MongoDB successfully 
+2025-09-10 14:43:22 [INFO] Server is running on PORT: 8080 
+2025-09-10 14:43:23 [INFO] Connected to MongoDB successfully 
+2025-09-10 14:43:30 [INFO] Server is running on PORT: 8080 
+2025-09-10 14:43:33 [INFO] Connected to MongoDB successfully 
+2025-09-10 14:43:35 [INFO] [TRACE] GET /api/v1/product - Status: 304 - Duration: 402ms - User: guest
+2025-09-10 14:43:35 [INFO] [TRACE] GET /api/v1/product - Status: 304 - Duration: 403ms - User: guest
+2025-09-10 14:43:43 [INFO] Decoded user in authUserNotificationMiddleware {"user":{"_id":"68917744c5c04f01324a9f0d","name":"admin123","email":"admin1@gmail.com","isAdmin":true,"phone":"0123456798","iat":1757489767,"exp":1757490667},"traceId":"f9e7c4b4c83bf800c76f2fedb3107d78","trace_id":"f9e7c4b4c83bf800c76f2fedb3107d78","span_id":"28c15a704731fd18","trace_flags":"01"}
+2025-09-10 14:43:43 [INFO] [TRACE] GET /api/v1/notification - Status: 304 - Duration: 62ms - User: 68917744c5c04f01324a9f0d
+2025-09-10 14:43:43 [INFO] [TRACE] GET /api/v1/notification - Status: 304 - Duration: 62ms - User: 68917744c5c04f01324a9f0d
+2025-09-10 14:43:44 [INFO] [TRACE] GET /api/v1/product?page=&limit=10&sort=&filter=&field=name - Status: 200 - Duration: 262ms - User: guest
+2025-09-10 14:43:44 [INFO] [TRACE] GET /api/v1/product?page=&limit=10&sort=&filter=&field=name - Status: 200 - Duration: 264ms - User: guest
+2025-09-10 14:43:46 [INFO] User authorized {"user":{"_id":"68917744c5c04f01324a9f0d","name":"admin123","email":"admin1@gmail.com","isAdmin":true,"phone":"0123456798","iat":1757489767,"exp":1757490667},"traceId":"cf01da2d81f834ef9b8e8baa99b39b07","trace_id":"cf01da2d81f834ef9b8e8baa99b39b07","span_id":"d0e036c16ead8aef","trace_flags":"01"}
+2025-09-10 14:43:46 [INFO] [TRACE] GET /api/v1/order/get-orders-by-userId/68917744c5c04f01324a9f0d - Status: 304 - Duration: 201ms - User: 68917744c5c04f01324a9f0d
+2025-09-10 14:43:46 [INFO] [TRACE] GET /api/v1/order/get-orders-by-userId/68917744c5c04f01324a9f0d - Status: 304 - Duration: 203ms - User: 68917744c5c04f01324a9f0d
