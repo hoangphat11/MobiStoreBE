@@ -115,6 +115,54 @@ const getAllProductsPagination = async (page, limit, sort, field, filter) => {
         }
     }
 };
+// const getAllProductsPagination = async (page = 1, limit = 1000, sort, field, filter) => {
+//     try {
+//         // ép kiểu số
+//         page = Number(page) || 1;
+//         limit = Number(limit) || 1000;
+
+//         // query object
+//         let query = {};
+//         if (filter && field) {
+//             query[field] = { $regex: filter, $options: 'i' };
+//         }
+
+//         // sort object
+//         let sortObj = {};
+//         if (sort && field) {
+//             sortObj[field] = sort === 'DESC' ? -1 : 1;
+//         }
+
+//         // count trước để paginate
+//         const total = await Product.countDocuments(query);
+//         const offset = (page - 1) * limit;
+
+//         // query data
+//         const products = await Product.find(query)
+//             .skip(offset)
+//             .limit(limit)
+//             .sort(sortObj)
+//             .lean();
+
+//         return {
+//             EM: 'Get products with pagination success',
+//             EC: 0,
+//             DT: {
+//                 totalRows: total,
+//                 totalPages: Math.ceil(total / limit),
+//                 currentPage: page,
+//                 products
+//             }
+//         }
+//     } catch (error) {
+//         console.log(">>> check error from getAllProductsPagination: ", error);
+//         return {
+//             EM: 'Something went wrong with service',
+//             EC: 1,
+//             DT: []
+//         }
+//     }
+// };
 
 const getDetailProdById = async (id) => {
     try {
@@ -230,6 +278,43 @@ const updateProduct = async ({ id, data }) => {
         }
     }
 }
+// const updateProduct = async (data) => {
+//     try {
+//         if (!ObjectId.isValid(data.id)) {
+//             return { EM: 'Invalid Product ID', EC: 1, DT: '' };
+//         }
+
+//         // check product tồn tại
+//         let existingProd = await Product.findById(data.id);
+//         if (!existingProd) {
+//             return { EM: 'Product not found', EC: 2, DT: '' };
+//         }
+
+//         // check name bị trùng (ngoại trừ chính nó)
+//         let duplicate = await Product.findOne({
+//             name: data.name,
+//             _id: { $ne: data.id }
+//         });
+//         if (duplicate) {
+//             return { EM: 'Product name already exists', EC: 3, DT: '' };
+//         }
+
+//         // update
+//         await Product.updateOne(
+//             { _id: data.id },
+//             { ...data }
+//         );
+
+//         return {
+//             EM: 'Update product success',
+//             EC: 0,
+//             DT: ''
+//         }
+//     } catch (error) {
+//         console.log(">>> check error from updateProduct: ", error);
+//         return { EM: 'Something went wrong with service', EC: 1, DT: '' };
+//     }
+// };
 
 const deleteProduct = async (prodId) => {
     try {
@@ -382,7 +467,7 @@ const getProductsByType = async (page, limit, filter, prodType) => {
             DT: ''
         }
     }
-}
+}   
 
 module.exports = {
     createNewProduct, getAllProducts, getDetailProdById, updateProduct, deleteProduct, deleteManyProduct,
