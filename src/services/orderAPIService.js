@@ -134,7 +134,7 @@ const getOrdersByUserId = async (userId) => {
         };
     }
 };
-
+//
 const getDetailOrder = async (orderId, userId) => {
     try {
         if (!orderId || !userId)
@@ -209,6 +209,7 @@ const deleteOrder = async (orderId, userId) => {
         };
     }
 };
+
 // cập nhật trạng thái đơn hàng
 const updateOrderStatus = async (orderId, status, userId) => {
     try {
@@ -291,6 +292,7 @@ const updateOrderStatus = async (orderId, status, userId) => {
         };
     }
 };
+//
 // Cập nhật trạng thái thanh toán (cho COD)
 const updatePaymentStatus = async (id, newStatus) => {
     try {
