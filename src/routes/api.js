@@ -2,14 +2,35 @@ import express from 'express';
 import userController from '../controllers/userController';
 import productController from '../controllers/productController';
 import orderController from '../controllers/orderController';
-import paymentController from '../controllers/paymentController';
-import { authPermissionMiddleware, authUserMiddleware, authUser } from '../middleware/authMiddleWare';
+import { handleGetPaymentConfig, handleCaptureOrder } from '../controllers/paymentController';
+import {
+    authPermissionMiddleware,
+    authUserMiddleware,
+    authUserNotificationMiddleware
+} from '../middleware/authMiddleWare';
 import { createNotification, fetchAllNotifications } from "../controllers/notificationController.js";
-//import { createNotification, fetchNotificationsByUser } from "../controllers/notificationController.js";
+import logger from "../configs/logger.js"; // logger winston
+// Tracing middleware
+const tracingMiddleware = (req, res, next) => {
+    const startTime = Date.now();
+    const method = req.method;
+    const url = req.originalUrl;
+
+    res.on("finish", () => {
+        const duration = Date.now() - startTime;
+        const userId = req.user?._id || "guest"; // nếu đã decode JWT thì lấy user
+        logger.info(`[TRACE] ${method} ${url} - Status: ${res.statusCode} - Duration: ${duration}ms - User: ${userId}`);
+    });
+
+    next();
+};
 
 const router = express.Router();
 
 const initAPIRoutes = (app) => {
+    // ----------------- TRACING -----------------
+    router.use(tracingMiddleware); // Tất cả request qua router đều được trace
+
     // ----------------- AUTH -----------------
     router.post("/login", userController.handleLogin);
     router.post("/register", userController.handleRegister);
@@ -42,25 +63,13 @@ const initAPIRoutes = (app) => {
     router.put("/orders/:orderId/payment", orderController.handleUpdatePaymentStatus);
 
     // ----------------- PAYMENT -----------------
-    router.get('/payment/config', paymentController.handleGetPaymentConfig);
+    router.get('/payment/config', handleGetPaymentConfig);
+    router.post("/payment/capture", handleCaptureOrder);
 
     // ----------------- NOTIFICATIONS -----------------
-    // Tất cả route notification đều cần login
+    router.post("/create", authUserNotificationMiddleware, createNotification);
+    router.get("/notification", authUserNotificationMiddleware, fetchAllNotifications);
 
-    // router.post("/create", authUser, createNotification);
-
-    // Lấy tất cả notification của user
-    // router.get("/", authUser, fetchAllNotifications);
-
-
-    //  router.post("/create", createNotification);
-    //  router.get("/", fetchAllNotifications);
-
-    // Tạo notification (user phải login)
-    router.post("/create", authUserMiddleware, createNotification);
-
-    // Lấy notification của user hiện tại
-    router.get("/", authUserMiddleware, fetchAllNotifications);
     // ----------------- PREFIX API -----------------
     return app.use("/api/v1", router);
 }

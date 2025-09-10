@@ -38,37 +38,6 @@ const handleGetAllOrders = async (req, res) => {
 //     }
 // };
 
-// const handleCreateNewOrder = async (req, res) => {
-//     try {
-//         // Tạo order qua service
-//         const data = await orderAPIService.createNewOrder(req.body);
-
-//         if (data.EC !== 0) {
-//             return res.status(400).json(data);
-//         }
-
-//         // Lấy order document vừa lưu
-//         const savedOrder = data.DT; // data.DT là document order đã lưu từ service
-
-//         // Tạo notification dựa trên order vừa tạo
-//         const notification = await createNotificationForOrder(savedOrder);
-
-//         return res.status(200).json({
-//             EM: data.EM,
-//             EC: data.EC,
-//             DT: savedOrder,
-//             notification
-//         });
-//     } catch (error) {
-//         console.error("Error in handleCreateNewOrder:", error);
-//         return res.status(500).json({
-//             EM: "Internal server error",
-//             EC: -1,
-//             DT: ""
-//         });
-//     }
-// };
-
 
 
 //goc2
@@ -94,7 +63,6 @@ const handleGetAllOrders = async (req, res) => {
 //         });
 //     }
 // };
-
 const handleCreateNewOrder = async (req, res) => {
     try {
         // 1️⃣ Tạo order

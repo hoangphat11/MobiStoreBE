@@ -1,5 +1,6 @@
 import productAPIService from '../services/productAPIService';
 
+// lấy tất cả sản phẩm
 const handleGetAllProducts = async (req, res) => {
     try {
         if (req.query.page && req.query.limit) {  //nếu hiển thị phân trang

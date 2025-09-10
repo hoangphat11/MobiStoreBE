@@ -1,48 +1,80 @@
 
 import Notification from "../models/NotificationModel.js";
 
-/**
- * Tạo thông báo mới gắn với user
- * @param {ObjectId} userId - ID của user
- * @param {Array} orderItems - danh sách sản phẩm trong đơn
- */
+export const getAllNotifications = async (userId) => {
+  try {
+    if (!userId) throw new Error("UserId missing for notifications");
+
+    const notifications = await Notification.find({ userId })
+      .sort({ createdAt: -1 });
+    return notifications;
+  } catch (err) {
+    console.error("getAllNotifications error:", err);
+    throw err;
+  }
+};
+
 export const addNotification = async (orderItems, userId) => {
+  try {
     if (!Array.isArray(orderItems) || orderItems.length === 0) return null;
 
     const firstProductName = orderItems[0]?.name || "Sản phẩm";
     const total = orderItems.reduce((sum, item) => sum + (item.price || 0) * (item.amount || 1), 0);
 
-    const title = "Thông báo đơn hàng"; // 👈 thêm title
+    const title = "Thông báo đơn hàng";
     const message = `Đơn hàng ${firstProductName}… đã đặt thành công! Tổng: ${total}$`;
 
-    try {
-        const newNotification = new Notification({ title, message, userId });
-        await newNotification.save();
-        return newNotification;
-    } catch (error) {
-        console.error("Lỗi lưu thông báo:", error);
-        return null;
-    }
+    const newNotification = new Notification({ title, message, userId });
+    await newNotification.save();
+    return newNotification;
+  } catch (err) {
+    console.error("addNotification error:", err);
+    throw err;
+  }
 };
 
+// /**
+//  * Tạo thông báo mới gắn với user
+//  * @param {ObjectId} userId - ID của user
+//  * @param {Array} orderItems - danh sách sản phẩm trong đơn
+//  */
+// export const addNotification = async (orderItems, userId) => {
+//     if (!Array.isArray(orderItems) || orderItems.length === 0) return null;
+
+//     const firstProductName = orderItems[0]?.name || "Sản phẩm";
+//     const total = orderItems.reduce((sum, item) => sum + (item.price || 0) * (item.amount || 1), 0);
+
+//     const title = "Thông báo đơn hàng"; // 👈 thêm title
+//     const message = `Đơn hàng ${firstProductName}… đã đặt thành công! Tổng: ${total}$`;
+
+//     try {
+//         const newNotification = new Notification({ title, message, userId });
+//         await newNotification.save();
+//         return newNotification;
+//     } catch (error) {
+//         console.error("Lỗi lưu thông báo:", error);
+//         return null;
+//     }
+// };
 
 
-// Lấy tất cả thông báo, có thể lọc theo userId
-export const getAllNotifications = async (userId = null) => {
-    try {
-        let query = {};
-        if (userId) query.userId = userId;
 
-        const notifications = await Notification.find(query)
-            .populate("userId", "name email avatar") // lấy thông tin user
-            .sort({ createdAt: -1 });
+// // Lấy tất cả thông báo, có thể lọc theo userId
+// export const getAllNotifications = async (userId = null) => {
+//     try {
+//         let query = {};
+//         if (userId) query.userId = userId;
 
-        return notifications;
-    } catch (error) {
-        console.error("Lỗi lấy thông báo:", error);
-        return [];
-    }
-};
+//         const notifications = await Notification.find(query)
+//             .populate("userId", "name email avatar") // lấy thông tin user
+//             .sort({ createdAt: -1 });
+
+//         return notifications;
+//     } catch (error) {
+//         console.error("Lỗi lấy thông báo:", error);
+//         return [];
+//     }
+// };
 
 // import Notification from "../models/NotificationModel.js";
 

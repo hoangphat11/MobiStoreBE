@@ -10,7 +10,7 @@ const checkProdNameExisted = async (prodName) => {
         console.log('>>> check error (checkProdNameExisted):', error);
     }
 };
-
+//
 const getAllProducts = async () => {
     let listProducts = [];
     try {
