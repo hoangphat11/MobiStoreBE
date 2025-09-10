@@ -5,31 +5,163 @@ import Product from '../models/ProductModel';
 import User from '../models/UserModel';
 import emailAPIService from './emailAPIService';
 
-const getAllOrders = async () => {
+// const getAllOrders = async () => {
+//     try {
+//         const listOrders = await Order.find({}, '-updatedAt -__v');
+//         if (listOrders.length > 0) {
+//             return {
+//                 EM: 'Get all orders success!',
+//                 EC: 0,
+//                 DT: listOrders
+//             };
+//         }
+//         return {
+//             EM: 'Cannot get all orders because data is empty',
+//             EC: 1,
+//             DT: []
+//         };
+//     } catch (error) {
+//         console.log('>>> check error from getAllOrders():', error);
+//         return {
+//             EM: 'Something wrongs in Service getAllOrders()',
+//             EC: -2,
+//             DT: ''
+//         };
+//     }
+// };
+
+// const createNewOrder = async (rawData) => {
+//     try {
+//         let {
+//             orderItems, paymentMethod, itemsPrice, shippingPrice, totalPrice,
+//             email, fullName, address, city, phone, user, isPaid = false, paidAt = ''
+//         } = rawData;
+
+//         if (!paymentMethod || !itemsPrice || !shippingPrice || !totalPrice || !email || !fullName || !address ||
+//             !city || !phone || !user || !orderItems) {
+//             return {
+//                 EM: 'Missing required params',
+//                 EC: 1,
+//                 DT: ''
+//             };
+//         }
+
+//         const missingProducts = [];
+
+//         for (const item of orderItems) {
+//             const { name, product, amount } = item;
+//             if (!product || !amount)
+//                 throw new Error(`Missing required params in item: ${JSON.stringify(item)}`);
+
+//             try {
+//                 const productData = await Product.findOneAndUpdate(
+//                     { _id: product, countInStock: { $gte: amount } },
+//                     {
+//                         $inc: {
+//                             countInStock: -amount,
+//                             sold: +amount,
+//                         },
+//                     },
+//                     { new: true }
+//                 );
+
+//                 if (!productData) missingProducts.push(name);
+//             } catch (error) {
+//                 console.error(`Error updating product ${product}:`, error);
+//                 missingProducts.push(name);
+//             }
+//         }
+
+//         orderItems = orderItems.filter(item => !missingProducts.includes(item.name));
+//         orderItems = orderItems.map(({ countInStock, ...rest }) => rest);
+
+//         if (orderItems.length === 0) {
+//             return {
+//                 EM: 'Các sản phẩm bạn chọn đã bán sạch hoặc không đủ số lượng',
+//                 EC: 2,
+//                 DT: '',
+//             };
+//         }
+
+//         const data = {
+//             orderItems,
+//             shippingAddress: { fullName, address, city, phone },
+//             paymentMethod,
+//             itemsPrice,
+//             shippingPrice,
+//             totalPrice,
+//             user,
+//             isPaid,
+//             paidAt,
+//         };
+
+//         const newOrder = new Order(data);
+//         await newOrder.save();
+//         await emailAPIService.sendSimpleEmail({ ...data, email });
+
+//         return {
+//             EM: missingProducts.length > 0
+//                 ? `Tạo đơn thành công, có ${missingProducts.length} sản phẩm không đủ số lượng: ${missingProducts}`
+//                 : 'Order created successfully',
+//             EC: 0,
+//             DT: orderItems,
+//         };
+//     } catch (error) {
+//         console.log('>>> check error from createNewOrder():', error);
+//         return {
+//             EM: 'Something wrongs in Service createNewOrder()',
+//             EC: -2,
+//             DT: ''
+//         };
+//     }
+// };
+
+// getAllOrders with pagination
+const getAllOrders = async (page = 1, limit = 10) => {
     try {
-        const listOrders = await Order.find({}, '-updatedAt -__v');
+        const skip = (page - 1) * limit;
+
+        // Count tổng số orders để tính totalPages
+        const totalOrders = await Order.countDocuments();
+
+        const listOrders = await Order.find({}, '-updatedAt -__v')
+            .sort({ createdAt: -1 }) // mới nhất trước
+            .skip(skip)
+            .limit(limit);
+
         if (listOrders.length > 0) {
             return {
                 EM: 'Get all orders success!',
                 EC: 0,
-                DT: listOrders
+                DT: {
+                    orders: listOrders,
+                    meta: {
+                        page,
+                        limit,
+                        totalOrders,
+                        totalPages: Math.ceil(totalOrders / limit),
+                    }
+                }
             };
         }
+
         return {
-            EM: 'Cannot get all orders because data is empty',
+            EM: 'No orders found',
             EC: 1,
             DT: []
         };
     } catch (error) {
         console.log('>>> check error from getAllOrders():', error);
         return {
-            EM: 'Something wrongs in Service getAllOrders()',
+            EM: 'Something went wrong in getAllOrders()',
             EC: -2,
             DT: ''
         };
     }
 };
 
+
+// createNewOrder optimized with Promise.all
 const createNewOrder = async (rawData) => {
     try {
         let {
@@ -46,12 +178,12 @@ const createNewOrder = async (rawData) => {
             };
         }
 
-        const missingProducts = [];
-
-        for (const item of orderItems) {
+        // Chạy song song các update stock
+        const updateResults = await Promise.all(orderItems.map(async (item) => {
             const { name, product, amount } = item;
-            if (!product || !amount)
-                throw new Error(`Missing required params in item: ${JSON.stringify(item)}`);
+            if (!product || !amount) {
+                return { success: false, name };
+            }
 
             try {
                 const productData = await Product.findOneAndUpdate(
@@ -65,17 +197,21 @@ const createNewOrder = async (rawData) => {
                     { new: true }
                 );
 
-                if (!productData) missingProducts.push(name);
+                if (!productData) {
+                    return { success: false, name };
+                }
+                return { success: true, item };
             } catch (error) {
                 console.error(`Error updating product ${product}:`, error);
-                missingProducts.push(name);
+                return { success: false, name };
             }
-        }
+        }));
 
-        orderItems = orderItems.filter(item => !missingProducts.includes(item.name));
-        orderItems = orderItems.map(({ countInStock, ...rest }) => rest);
+        // Tách sản phẩm thành công & thất bại
+        const successfulItems = updateResults.filter(r => r.success).map(r => r.item);
+        const missingProducts = updateResults.filter(r => !r.success).map(r => r.name);
 
-        if (orderItems.length === 0) {
+        if (successfulItems.length === 0) {
             return {
                 EM: 'Các sản phẩm bạn chọn đã bán sạch hoặc không đủ số lượng',
                 EC: 2,
@@ -84,7 +220,7 @@ const createNewOrder = async (rawData) => {
         }
 
         const data = {
-            orderItems,
+            orderItems: successfulItems,
             shippingAddress: { fullName, address, city, phone },
             paymentMethod,
             itemsPrice,
@@ -97,19 +233,21 @@ const createNewOrder = async (rawData) => {
 
         const newOrder = new Order(data);
         await newOrder.save();
+
+        // Gửi email confirm
         await emailAPIService.sendSimpleEmail({ ...data, email });
 
         return {
             EM: missingProducts.length > 0
-                ? `Tạo đơn thành công, có ${missingProducts.length} sản phẩm không đủ số lượng: ${missingProducts}`
+                ? `Tạo đơn thành công, ${missingProducts.length} sản phẩm không đủ số lượng: ${missingProducts.join(', ')}`
                 : 'Order created successfully',
             EC: 0,
-            DT: orderItems,
+            DT: successfulItems,
         };
     } catch (error) {
         console.log('>>> check error from createNewOrder():', error);
         return {
-            EM: 'Something wrongs in Service createNewOrder()',
+            EM: 'Something went wrong in createNewOrder()',
             EC: -2,
             DT: ''
         };

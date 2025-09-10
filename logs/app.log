@@ -962,3 +962,57 @@
 2025-09-10 13:56:49 [INFO] Connected to MongoDB successfully 
 2025-09-10 13:58:40 [INFO] Server is running on PORT: 8080 
 2025-09-10 13:58:43 [INFO] Connected to MongoDB successfully 
+2025-09-10 14:26:27 [INFO] Server is running on PORT: 8080 
+2025-09-10 14:26:30 [INFO] Connected to MongoDB successfully 
+2025-09-10 14:26:35 [ERROR] authUserNotificationMiddleware error {"error":"jwt expired","trace_id":"2c9682924f69eeb04d78cc5d6e73d4d8","span_id":"d50e3e8222ed3c37","trace_flags":"01"}
+2025-09-10 14:26:35 [INFO] [TRACE] GET /api/v1/notification - Status: 500 - Duration: 6ms - User: guest
+2025-09-10 14:26:35 [INFO] [TRACE] GET /api/v1/notification - Status: 500 - Duration: 5ms - User: guest
+2025-09-10 14:26:35 [ERROR] authUserMiddleware error {"error":"jwt expired","trace_id":"0c034e93c4da9a64d4613c399c6d7b19","span_id":"7ba7bd47c295553c","trace_flags":"01"}
+2025-09-10 14:26:35 [INFO] [TRACE] GET /api/v1/users/68917744c5c04f01324a9f0d - Status: 500 - Duration: 3ms - User: guest
+2025-09-10 14:26:35 [INFO] [TRACE] GET /api/v1/users/68917744c5c04f01324a9f0d - Status: 500 - Duration: 4ms - User: guest
+2025-09-10 14:26:35 [INFO] New subscription added {"subscription":{"endpoint":"https://fcm.googleapis.com/fcm/send/f11zOZkqZTA:APA91bFk0ltdEUJoq-bt2Q5a6-z9znOuGV33pkDIOwvBak9unTodeiHZRcqr1guLXiMhU5evzgd3mSayatp0QU8F-NoWiG1xq4nob5gw2SSplz06NhBNdq5WLm7izu5trJw-UXEov4wb","expirationTime":null,"keys":{"p256dh":"BOp9pd7YhQGFdt_z5b9os-a_YuwzzyV8Cd9frelluyAibrcbAEUJjjXDNy_iNQD78LkZtvLl8zyrmDqwkKlrOlE","auth":"E16UxtYDxWwhDLEp3rljfw"}},"trace_id":"d835d4a749c2009a659cfbe8469c76d5","span_id":"f4d1dbb8965fb7fd","trace_flags":"01"}
+2025-09-10 14:26:35 [INFO] [TRACE] POST /api/v1/subscribe - Status: 201 - Duration: 17ms - User: guest
+2025-09-10 14:26:35 [INFO] [TRACE] GET /api/v1/refresh-token - Status: 304 - Duration: 32ms - User: guest
+2025-09-10 14:26:35 [INFO] [TRACE] GET /api/v1/refresh-token - Status: 304 - Duration: 33ms - User: guest
+2025-09-10 14:26:35 [ERROR] authUserMiddleware error {"error":"jwt expired","trace_id":"7ee01175ef60a4b56047d5e39ae4d42b","span_id":"db38414421b45f5c","trace_flags":"01"}
+2025-09-10 14:26:35 [INFO] [TRACE] GET /api/v1/users/68917744c5c04f01324a9f0d - Status: 500 - Duration: 5ms - User: guest
+2025-09-10 14:26:35 [INFO] [TRACE] GET /api/v1/users/68917744c5c04f01324a9f0d - Status: 500 - Duration: 5ms - User: guest
+2025-09-10 14:26:45 [INFO] [TRACE] POST /api/v1/login - Status: 200 - Duration: 217ms - User: guest
+2025-09-10 14:26:45 [INFO] [TRACE] POST /api/v1/login - Status: 200 - Duration: 217ms - User: guest
+2025-09-10 14:26:45 [INFO] User authorized {"user":{"_id":"68917744c5c04f01324a9f0d","name":"admin123","email":"admin1@gmail.com","isAdmin":true,"phone":"0123456798","iat":1757489205,"exp":1757490105},"traceId":"7f22a8779b9baa86f367f82ff58b2f3a","trace_id":"7f22a8779b9baa86f367f82ff58b2f3a","span_id":"532663ce664ba45b","trace_flags":"01"}
+2025-09-10 14:26:45 [INFO] [TRACE] GET /api/v1/users/68917744c5c04f01324a9f0d - Status: 200 - Duration: 42ms - User: 68917744c5c04f01324a9f0d
+2025-09-10 14:26:45 [INFO] [TRACE] GET /api/v1/users/68917744c5c04f01324a9f0d - Status: 200 - Duration: 45ms - User: 68917744c5c04f01324a9f0d
+2025-09-10 14:26:45 [INFO] Decoded user in authUserNotificationMiddleware {"user":{"_id":"68917744c5c04f01324a9f0d","name":"admin123","email":"admin1@gmail.com","isAdmin":true,"phone":"0123456798","iat":1757489205,"exp":1757490105},"traceId":"1cd581a43719b7ea1fa61068ba3a6f25","trace_id":"1cd581a43719b7ea1fa61068ba3a6f25","span_id":"37cc09be029683ba","trace_flags":"01"}
+2025-09-10 14:26:45 [INFO] [TRACE] GET /api/v1/notification - Status: 200 - Duration: 52ms - User: 68917744c5c04f01324a9f0d
+2025-09-10 14:26:45 [INFO] [TRACE] GET /api/v1/notification - Status: 200 - Duration: 53ms - User: 68917744c5c04f01324a9f0d
+2025-09-10 14:26:45 [INFO] [TRACE] GET /api/v1/product/get-all-types - Status: 304 - Duration: 43ms - User: guest
+2025-09-10 14:26:45 [INFO] [TRACE] GET /api/v1/product/get-all-types - Status: 304 - Duration: 42ms - User: guest
+2025-09-10 14:26:45 [INFO] [TRACE] GET /api/v1/product?page=&limit=10&sort=&filter=&field=name - Status: 304 - Duration: 233ms - User: guest
+2025-09-10 14:26:45 [INFO] [TRACE] GET /api/v1/product?page=&limit=10&sort=&filter=&field=name - Status: 304 - Duration: 233ms - User: guest
+2025-09-10 14:26:47 [INFO] User authorized {"user":{"_id":"68917744c5c04f01324a9f0d","name":"admin123","email":"admin1@gmail.com","isAdmin":true,"phone":"0123456798","iat":1757489205,"exp":1757490105},"traceId":"f62ca29f02e4f0935e6b4b5517165297","trace_id":"f62ca29f02e4f0935e6b4b5517165297","span_id":"ad2edbb1bc617e8b","trace_flags":"01"}
+2025-09-10 14:26:47 [INFO] [TRACE] GET /api/v1/users/68917744c5c04f01324a9f0d - Status: 304 - Duration: 43ms - User: 68917744c5c04f01324a9f0d
+2025-09-10 14:26:47 [INFO] [TRACE] GET /api/v1/users/68917744c5c04f01324a9f0d - Status: 304 - Duration: 44ms - User: 68917744c5c04f01324a9f0d
+2025-09-10 14:26:47 [INFO] Decoded user in authUserNotificationMiddleware {"user":{"_id":"68917744c5c04f01324a9f0d","name":"admin123","email":"admin1@gmail.com","isAdmin":true,"phone":"0123456798","iat":1757489205,"exp":1757490105},"traceId":"6493b0eaeaa91fecd58462b7ae864523","trace_id":"6493b0eaeaa91fecd58462b7ae864523","span_id":"45aabdb375529ffa","trace_flags":"01"}
+2025-09-10 14:26:47 [INFO] New subscription added {"subscription":{"endpoint":"https://fcm.googleapis.com/fcm/send/f11zOZkqZTA:APA91bFk0ltdEUJoq-bt2Q5a6-z9znOuGV33pkDIOwvBak9unTodeiHZRcqr1guLXiMhU5evzgd3mSayatp0QU8F-NoWiG1xq4nob5gw2SSplz06NhBNdq5WLm7izu5trJw-UXEov4wb","expirationTime":null,"keys":{"p256dh":"BOp9pd7YhQGFdt_z5b9os-a_YuwzzyV8Cd9frelluyAibrcbAEUJjjXDNy_iNQD78LkZtvLl8zyrmDqwkKlrOlE","auth":"E16UxtYDxWwhDLEp3rljfw"}},"trace_id":"e0a2719acbd3e6d78a2bb5423b01b0f5","span_id":"5e00a1fddd21ac6c","trace_flags":"01"}
+2025-09-10 14:26:47 [INFO] [TRACE] POST /api/v1/subscribe - Status: 201 - Duration: 6ms - User: guest
+2025-09-10 14:26:47 [INFO] [TRACE] GET /api/v1/notification - Status: 304 - Duration: 48ms - User: 68917744c5c04f01324a9f0d
+2025-09-10 14:26:47 [INFO] [TRACE] GET /api/v1/notification - Status: 304 - Duration: 47ms - User: 68917744c5c04f01324a9f0d
+2025-09-10 14:26:48 [INFO] Decoded user in authUserNotificationMiddleware {"user":{"_id":"68917744c5c04f01324a9f0d","name":"admin123","email":"admin1@gmail.com","isAdmin":true,"phone":"0123456798","iat":1757489205,"exp":1757490105},"traceId":"0522cc74a552132e4273f9c4d070466e","trace_id":"0522cc74a552132e4273f9c4d070466e","span_id":"d1c7bb2a0ffc8b03","trace_flags":"01"}
+2025-09-10 14:26:48 [INFO] [TRACE] GET /api/v1/notification - Status: 304 - Duration: 41ms - User: 68917744c5c04f01324a9f0d
+2025-09-10 14:26:48 [INFO] [TRACE] GET /api/v1/notification - Status: 304 - Duration: 42ms - User: 68917744c5c04f01324a9f0d
+2025-09-10 14:26:48 [INFO] [TRACE] GET /api/v1/product/get-all-types - Status: 304 - Duration: 41ms - User: guest
+2025-09-10 14:26:48 [INFO] [TRACE] GET /api/v1/product/get-all-types - Status: 304 - Duration: 41ms - User: guest
+2025-09-10 14:26:48 [INFO] [TRACE] GET /api/v1/product?page=&limit=10&sort=&filter=&field=name - Status: 304 - Duration: 225ms - User: guest
+2025-09-10 14:26:48 [INFO] [TRACE] GET /api/v1/product?page=&limit=10&sort=&filter=&field=name - Status: 304 - Duration: 224ms - User: guest
+2025-09-10 14:26:50 [INFO] [TRACE] GET /api/v1/product/67f89e36a2b21d7409d4218d - Status: 304 - Duration: 49ms - User: guest
+2025-09-10 14:26:50 [INFO] [TRACE] GET /api/v1/product/67f89e36a2b21d7409d4218d - Status: 304 - Duration: 50ms - User: guest
+2025-09-10 14:26:55 [INFO] [TRACE] GET /api/v1/payment/config - Status: 304 - Duration: 2ms - User: guest
+2025-09-10 14:26:55 [INFO] [TRACE] GET /api/v1/payment/config - Status: 304 - Duration: 3ms - User: guest
+2025-09-10 14:26:57 [INFO] User authorized {"user":{"_id":"68917744c5c04f01324a9f0d","name":"admin123","email":"admin1@gmail.com","isAdmin":true,"phone":"0123456798","iat":1757489205,"exp":1757490105},"traceId":"d35271ba1ea7e35fbb8e1cec3dd32f31","trace_id":"d35271ba1ea7e35fbb8e1cec3dd32f31","span_id":"ba4b445d2bbabe94","trace_flags":"01"}
+2025-09-10 14:27:00 [INFO] [TRACE] POST /api/v1/order/create - Status: 200 - Duration: 3199ms - User: 68917744c5c04f01324a9f0d
+2025-09-10 14:27:00 [INFO] [TRACE] POST /api/v1/order/create - Status: 200 - Duration: 3199ms - User: 68917744c5c04f01324a9f0d
+2025-09-10 14:27:07 [INFO] User authorized {"user":{"_id":"68917744c5c04f01324a9f0d","name":"admin123","email":"admin1@gmail.com","isAdmin":true,"phone":"0123456798","iat":1757489205,"exp":1757490105},"traceId":"4fa70f189ece0493e3931a6573ab321d","trace_id":"4fa70f189ece0493e3931a6573ab321d","span_id":"dc1873a4fc75e99c","trace_flags":"01"}
+2025-09-10 14:27:07 [INFO] [TRACE] GET /api/v1/order/get-orders-by-userId/68917744c5c04f01324a9f0d - Status: 200 - Duration: 196ms - User: 68917744c5c04f01324a9f0d
+2025-09-10 14:27:07 [INFO] [TRACE] GET /api/v1/order/get-orders-by-userId/68917744c5c04f01324a9f0d - Status: 200 - Duration: 193ms - User: 68917744c5c04f01324a9f0d
+2025-09-10 14:27:21 [INFO] Server is running on PORT: 8080 
+2025-09-10 14:27:22 [INFO] Connected to MongoDB successfully 
