@@ -8,7 +8,7 @@ import {
     authUserMiddleware,
     authUserNotificationMiddleware
 } from '../middleware/authMiddleWare';
-import { createNotification, fetchAllNotifications } from "../controllers/notificationController.js";
+import { createNotification, fetchAllNotifications, markNotificationAsRead } from "../controllers/notificationController.js";
 import logger from "../configs/logger.js"; // logger winston
 // Tracing middleware
 const tracingMiddleware = (req, res, next) => {
@@ -69,7 +69,7 @@ const initAPIRoutes = (app) => {
     // ----------------- NOTIFICATIONS -----------------
     router.post("/create", authUserNotificationMiddleware, createNotification);
     router.get("/notification", authUserNotificationMiddleware, fetchAllNotifications);
-
+    router.put("/notification/:id/read", authUserNotificationMiddleware, markNotificationAsRead); // đánh dấu đã đọc
     // ----------------- PREFIX API -----------------
     return app.use("/api/v1", router);
 }

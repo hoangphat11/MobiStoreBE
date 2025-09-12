@@ -117,46 +117,19 @@ import emailAPIService from './emailAPIService';
 // };
 
 // getAllOrders with pagination
-const getAllOrders = async (page = 1, limit = 10) => {
+const getAllOrders = async () => {
     try {
-        const skip = (page - 1) * limit;
-
-        // Count tổng số orders để tính totalPages
-        const totalOrders = await Order.countDocuments();
-
-        const listOrders = await Order.find({}, '-updatedAt -__v')
-            .sort({ createdAt: -1 }) // mới nhất trước
-            .skip(skip)
-            .limit(limit);
-
-        if (listOrders.length > 0) {
-            return {
-                EM: 'Get all orders success!',
-                EC: 0,
-                DT: {
-                    orders: listOrders,
-                    meta: {
-                        page,
-                        limit,
-                        totalOrders,
-                        totalPages: Math.ceil(totalOrders / limit),
-                    }
-                }
-            };
-        }
+        const orders = await Order.find({}, '-updatedAt -__v')
+            .sort({ createdAt: -1 });
 
         return {
-            EM: 'No orders found',
-            EC: 1,
-            DT: []
+            EM: 'Get all orders success!',
+            EC: 0,
+            DT: { orders, totalOrders: orders.length }
         };
     } catch (error) {
-        console.log('>>> check error from getAllOrders():', error);
-        return {
-            EM: 'Something went wrong in getAllOrders()',
-            EC: -2,
-            DT: ''
-        };
+        console.log(">>> check error from getAllOrders():", error);
+        return { EM: 'Something went wrong', EC: -2, DT: [] };
     }
 };
 

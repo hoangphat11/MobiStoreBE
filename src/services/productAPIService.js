@@ -41,80 +41,50 @@ const getAllProducts = async () => {
 
 // Pagination:
 const getAllProductsPagination = async (page, limit, sort, field, filter) => {
-    if (page && limit) {
-        try {
-            let skip = (page - 1) * limit;                   // Tính toán skip (tương đương offset)
-            let totalRows = await Product.countDocuments();  // Đếm tổng số documents trong collection
-            let totalPages = Math.ceil(totalRows / limit);   // Tính tổng số trang
+    try {
+        // Ép kiểu số, fallback nếu không có
+        page = Number(page) || 1;
+        limit = Number(limit) || 10;
 
-            let listProducts = [];
-            if (filter && field) {
-                listProducts = await Product.find({ [field]: { '$regex': filter, '$options': 'i' } })
-                    .skip(skip)     // Bỏ qua các document không thuộc trang hiện tại
-                    .limit(limit)   // Lấy số lượng document giới hạn
-                    .lean();        // Trả về plain JavaScript objects
-            }
-            else if (sort && field) {
-                listProducts = await Product.find({})
-                    .skip(skip)     // Bỏ qua các document không thuộc trang hiện tại
-                    .limit(limit)   // Lấy số lượng document giới hạn
-                    .sort({ [field]: sort })
-                    .lean();        // Trả về plain JavaScript objects
-            }
-            else {
-                listProducts = await Product.find({})
-                    .skip(skip)
-                    .limit(limit)
-                    .lean();
-            }
-            return {
-                EM: `success`,
-                EC: 0,
-                DT: { totalRows, totalPages, listProducts }
-            };
-        } catch (error) {
-            console.log('>>> Error in getAllProductsPagination():', error);
-            return {
-                EM: `Something went wrong in getAllProductsPagination()`,
-                EC: -2,
-                DT: ''
-            };
+        // Query object (filter)
+        const query = {};
+        if (filter && field) {
+            query[field] = { $regex: filter, $options: "i" };
         }
-    }
-    else {
-        try {
-            let totalRows = await Product.countDocuments();
-            let listProducts = [];
-            if (filter && field)
-                listProducts = await Product.find({ [field]: { '$regex': filter, '$options': 'i' } })
-                    .limit(limit ? +limit : null)
-                    .lean();
 
-            else if (sort && field)
-                listProducts = await Product.find({})
-                    .sort({ [field]: sort })
-                    .limit(limit ? +limit : null)
-                    .lean();        // Trả về plain JavaScript objects
-
-            else
-                listProducts = await Product.find({})
-                    .limit(limit ? +limit : null)
-                    .lean();
-            return {
-                EM: `success`,
-                EC: 0,
-                DT: { totalRows, listProducts }
-            };
-        } catch (error) {
-            console.log('>>> Error in getAllProductsPagination():', error);
-            return {
-                EM: `Something went wrong in getAllProductsPagination()`,
-                EC: -2,
-                DT: ''
-            };
+        // Sort object
+        const sortObj = {};
+        if (sort && field) {
+            sortObj[field] = sort === "DESC" ? -1 : 1;
         }
+
+        // Đếm tổng row
+        const totalRows = await Product.countDocuments(query);
+        const totalPages = Math.ceil(totalRows / limit);
+        const skip = (page - 1) * limit;
+
+        // Query data
+        const listProducts = await Product.find(query, "-createdAt -updatedAt -__v")
+            .skip(skip)
+            .limit(limit)
+            .sort(sortObj)
+            .lean();
+
+        return {
+            EM: "success",
+            EC: 0,
+            DT: { totalRows, totalPages, currentPage: page, listProducts },
+        };
+    } catch (error) {
+        console.log(">>> Error in getAllProductsPagination():", error);
+        return {
+            EM: `Something went wrong in getAllProductsPagination()`,
+            EC: -2,
+            DT: "",
+        };
     }
 };
+
 // const getAllProductsPagination = async (page = 1, limit = 1000, sort, field, filter) => {
 //     try {
 //         // ép kiểu số
@@ -237,7 +207,7 @@ const createNewProduct = async (rawData) => {
             DT: '',
         }
     } catch (error) {
-       // console.log('>>> check error from createNewProduct():', error);
+        // console.log('>>> check error from createNewProduct():', error);
         return {
             EM: `Something wrongs in Service  createNewProduct() `,
             EC: -2,
@@ -245,7 +215,6 @@ const createNewProduct = async (rawData) => {
         }
     }
 };
-
 const updateProduct = async ({ id, data }) => {
     try {
         if (!id) {
@@ -255,6 +224,7 @@ const updateProduct = async ({ id, data }) => {
                 DT: ''
             };
         }
+
         if (!Types.ObjectId.isValid(id)) {
             return {
                 EM: 'Invalid ID format!',
@@ -262,59 +232,74 @@ const updateProduct = async ({ id, data }) => {
                 DT: ''
             };
         }
-        if (await checkProdNameExisted(data.name)) {
-            return { EM: 'Product name is existed!', EC: 2, DT: 'name' };
+
+        // Lấy sản phẩm hiện tại
+        const existingProd = await Product.findById(id);
+        if (!existingProd) {
+            return {
+                EM: 'Product is not existed!',
+                EC: -1,
+                DT: ''
+            };
         }
+
+        // Nếu có truyền name mới và khác name cũ thì mới check trùng
+        if (data.name && data.name !== existingProd.name) {
+            if (await checkProdNameExisted(data.name)) {
+                return { EM: 'Product name is existed!', EC: 2, DT: 'name' };
+            }
+        }
+
+        // Cập nhật sản phẩm
         const updatedProd = await Product.findByIdAndUpdate(id, data, { new: true });
-        return (updatedProd) ? { EM: 'Updated success', EC: 0, DT: updatedProd }
+
+        return updatedProd
+            ? { EM: 'Updated success', EC: 0, DT: updatedProd }
             : { EM: 'Product is not existed!', EC: -1, DT: '' };
 
     } catch (error) {
-       // console.log('>>> check error from updateProduct():', error);
+        console.error('>>> check error from updateProduct():', error);
         return {
-            EM: `Something wrongs in Service updateProduct() `,
+            EM: `Something wrongs in Service updateProduct()`,
             EC: -2,
             DT: ''
-        }
+        };
     }
-}
-// const updateProduct = async (data) => {
+};
+
+// const updateProduct = async ({ id, data }) => {
 //     try {
-//         if (!ObjectId.isValid(data.id)) {
-//             return { EM: 'Invalid Product ID', EC: 1, DT: '' };
+//         if (!id) {
+//             return {
+//                 EM: 'Missing required parameter!',
+//                 EC: 1,
+//                 DT: ''
+//             };
 //         }
-
-//         // check product tồn tại
-//         let existingProd = await Product.findById(data.id);
-//         if (!existingProd) {
-//             return { EM: 'Product not found', EC: 2, DT: '' };
+//         if (!Types.ObjectId.isValid(id)) {
+//             return {
+//                 EM: 'Invalid ID format!',
+//                 EC: 1,
+//                 DT: ''
+//             };
 //         }
-
-//         // check name bị trùng (ngoại trừ chính nó)
-//         let duplicate = await Product.findOne({
-//             name: data.name,
-//             _id: { $ne: data.id }
-//         });
-//         if (duplicate) {
-//             return { EM: 'Product name already exists', EC: 3, DT: '' };
+//         if (await checkProdNameExisted(data.name)) {
+//             return { EM: 'Product name is existed!', EC: 2, DT: 'name' };
 //         }
+//         const updatedProd = await Product.findByIdAndUpdate(id, data, { new: true });
+//         return (updatedProd) ? { EM: 'Updated success', EC: 0, DT: updatedProd }
+//             : { EM: 'Product is not existed!', EC: -1, DT: '' };
 
-//         // update
-//         await Product.updateOne(
-//             { _id: data.id },
-//             { ...data }
-//         );
-
+//     } catch (error) {
+//         // console.log('>>> check error from updateProduct():', error);
 //         return {
-//             EM: 'Update product success',
-//             EC: 0,
+//             EM: `Something wrongs in Service updateProduct() `,
+//             EC: -2,
 //             DT: ''
 //         }
-//     } catch (error) {
-//         console.log(">>> check error from updateProduct: ", error);
-//         return { EM: 'Something went wrong with service', EC: 1, DT: '' };
 //     }
-// };
+// }
+
 
 const deleteProduct = async (prodId) => {
     try {
@@ -345,7 +330,7 @@ const deleteProduct = async (prodId) => {
                 DT: ''
             }
     } catch (error) {
-      //  console.log('>>> check error from deleteProduct():', error);
+        //  console.log('>>> check error from deleteProduct():', error);
         return {
             EM: `Something wrongs in Service deleteProduct() `,
             EC: -2,
@@ -353,45 +338,92 @@ const deleteProduct = async (prodId) => {
         }
     }
 }
-
-const deleteManyProduct = async (arrIds) => {
+const deleteManyProduct = async (arrIds = []) => {
     try {
-        if (_.isEmpty(arrIds) || arrIds?.length <= 0) {
+        if (!arrIds.length) {
             return {
                 EM: 'Missing required parameter!',
                 EC: 1,
-                DT: ''
-            }
+                DT: null
+            };
         }
+
+        // Kiểm tra ID không hợp lệ
         const invalidId = arrIds.find(id => !Types.ObjectId.isValid(id));
         if (invalidId) {
             return {
-                EM: `Invalid ID format for ID: ${invalidId}`,
+                EM: `Invalid ID format: ${invalidId}`,
                 EC: 1,
-                DT: ''
+                DT: null
             };
         }
+
+        // Thực hiện xóa
         const result = await Product.deleteMany({ _id: { $in: arrIds } });
-        return result.deletedCount > 0 ?
-            {
+
+        if (result.deletedCount > 0) {
+            return {
                 EM: `Successfully deleted ${result.deletedCount} product(s).`,
                 EC: 0,
                 DT: result
-            } :
-            {
-                EM: 'No products were found to delete!',
-                EC: -1,
-                DT: ''
             };
-    } catch (error) {
-       // console.log('>>> check error from deleteProduct():', error);
-        return {
-            EM: `Something wrongs in Service deleteProduct() `,
-            EC: -2,
-            DT: ''
         }
+
+        return {
+            EM: 'No products found to delete!',
+            EC: -1,
+            DT: null
+        };
+
+    } catch (error) {
+        console.error('>>> deleteManyProduct error:', error);
+        return {
+            EM: 'Something went wrong in Service deleteManyProduct()',
+            EC: -2,
+            DT: null
+        };
     }
-}
+};
+
+
+// const deleteManyProduct = async (arrIds) => {
+//     try {
+//         if (_.isEmpty(arrIds) || arrIds?.length <= 0) {
+//             return {
+//                 EM: 'Missing required parameter!',
+//                 EC: 1,
+//                 DT: ''
+//             }
+//         }
+//         const invalidId = arrIds.find(id => !Types.ObjectId.isValid(id));
+//         if (invalidId) {
+//             return {
+//                 EM: `Invalid ID format for ID: ${invalidId}`,
+//                 EC: 1,
+//                 DT: ''
+//             };
+//         }
+//         const result = await Product.deleteMany({ _id: { $in: arrIds } });
+//         return result.deletedCount > 0 ?
+//             {
+//                 EM: `Successfully deleted ${result.deletedCount} product(s).`,
+//                 EC: 0,
+//                 DT: result
+//             } :
+//             {
+//                 EM: 'No products were found to delete!',
+//                 EC: -1,
+//                 DT: ''
+//             };
+//     } catch (error) {
+//         // console.log('>>> check error from deleteProduct():', error);
+//         return {
+//             EM: `Something wrongs in Service deleteProduct() `,
+//             EC: -2,
+//             DT: ''
+//         }
+//     }
+// }
 
 const getTypesProduct = async () => {
     try {
@@ -411,7 +443,7 @@ const getTypesProduct = async () => {
             }
         }
     } catch (error) {
-     //   console.log('>>> check error from getTypesProduct():', error);
+        //   console.log('>>> check error from getTypesProduct():', error);
         return {
             EM: `Something wrongs in Service  getTypesProduct() `,
             EC: -2,
@@ -449,7 +481,7 @@ const getProductsByType = async (page, limit, filter, prodType) => {
             return {
                 EM: 'Get products by type success',
                 EC: 0,
-                DT: listProducts 
+                DT: listProducts
             };
         }
         else
@@ -460,14 +492,14 @@ const getProductsByType = async (page, limit, filter, prodType) => {
             }
     }
     catch (error) {
-       // console.log('>>> check error from getProductsByType():', error);
+        // console.log('>>> check error from getProductsByType():', error);
         return {
             EM: `Something wrongs in Service  getProductsByType() `,
             EC: -2,
             DT: ''
         }
     }
-}   
+}
 
 module.exports = {
     createNewProduct, getAllProducts, getDetailProdById, updateProduct, deleteProduct, deleteManyProduct,

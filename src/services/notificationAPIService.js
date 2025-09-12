@@ -32,7 +32,22 @@ export const addNotification = async (orderItems, userId) => {
     throw err;
   }
 };
+export const markAsRead = async (notificationId, userId) => {
+  try {
+    if (!notificationId || !userId) throw new Error("Missing data to mark as read");
 
+    const updated = await Notification.findOneAndUpdate(
+      { _id: notificationId, userId },
+      { $set: { isRead: true } },
+      { new: true }
+    );
+
+    return updated;
+  } catch (err) {
+    console.error("markAsRead error:", err);
+    throw err;
+  }
+};
 // /**
 //  * Tạo thông báo mới gắn với user
 //  * @param {ObjectId} userId - ID của user

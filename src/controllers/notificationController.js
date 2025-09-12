@@ -1,4 +1,4 @@
-import { addNotification, getAllNotifications } from "../services/notificationAPIService";
+import { addNotification, getAllNotifications, markAsRead } from "../services/notificationAPIService";
 
 
 // Lấy tất cả notification của user hiện tại
@@ -26,7 +26,22 @@ export const createNotification = async (req, res) => {
     res.status(500).json({ EM: err.message, EC: -1, DT: null });
   }
 };
+export const markNotificationAsRead = async (req, res) => {
+  try {
+    const { id } = req.params; // lấy notificationId từ URL
+    const userId = req.user?._id;
 
+    const updated = await markAsRead(id, userId);
+    if (!updated) {
+      return res.status(404).json({ EM: "Không tìm thấy thông báo", EC: -1, DT: null });
+    }
+
+    res.status(200).json({ EM: "Đã đọc thông báo", EC: 0, DT: updated });
+  } catch (err) {
+    console.error("markNotificationAsRead error:", err);
+    res.status(500).json({ EM: err.message, EC: -1, DT: null });
+  }
+};
 // Controller tạo thông báo
 // export const createNotification = async (req, res) => {
 //     try {
